@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+     <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8">
+    <title></title>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js">
+
+    </script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+  
+    <div id="fullCanv" >
+      <div id="toolsDiv">
+        <div id="SmileyFace"></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    
+       <textarea id="commentBox" cols="50" rows="5" class='inputClass BorderStyle BorderRadius'></textarea>
+       <div>
+        <button type="Name" id="NameBtn" >Name</button>
+        <button type="button" id="SaveBtn" class="myButton BorderStyle BorderRadius">Save</button>
+       </div>
+      
+       <button type="button" id="CommentBtn" class="myButton BorderStyle BorderRadius">Send</button>
+      
+
+      <div id='chat'>
+        <div  id="chatArea" class='inputClass BorderStyle BorderRadius' id ="chatArea" readonly><div style="color:#662581">   . </div>  </div>
+        <textarea  cols="50" rows="1" id="NameBox" class='inputClass BorderStyle BorderRadius'></textarea>
+          </div>
+        <div id="whiteDiv" >
+          <div id="container" class="BorderStyle BorderRadius">
+            
+            <canvas id="Canvas"  >
+            </canvas>
+           
+          </div>
+          <div id="ColorsDiv" class="BorderStyle BorderRadius">
+            
+            <div id="ColorPallet"></div>
+            <input type="color" id="ColorInput"> Choose color</input>
+          </div>
+        </div>
+    </div>
+  </body>
+  <script src="bundle.js" ></script>
+</html>
