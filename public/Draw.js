@@ -11,6 +11,8 @@
       
  //   }
 // }
+//const io = require('socket.io')(80);
+var $ = require( "jquery" );
 let { saveAs } =require('file-saver');
 const {calcStraightLine}=require("./Modules/PixelMath.js");
 const {rgbaToText,hexToRGB}=require("./Modules/PixelFunctions.js")

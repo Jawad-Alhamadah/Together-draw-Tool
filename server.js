@@ -21,13 +21,14 @@ var SpanInfo=[];
 app.use(express.static('public'));
 app.use(express.static('public/bundle'));
 io.on('connection',function(socket){
-
+//console.log("connection baby!")
 socket.on('connect', function() { connectCounter++; });
 socket.on('disconnect', function() { connectCounter--; });
 
 socket.emit('myname',socket.id);
 UserNameList.push({Name:"anon",Id:socket.id})
   socket.on('draw',function(data){
+    //console.log("im here wtf")
   io.sockets.emit('draw',data);
   /*
   data.points.forEach((item, i) => {
