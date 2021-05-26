@@ -11087,13 +11087,14 @@ return jQuery;
       
  //   }
 // }
+//
 //const io = require('socket.io')(80);
 var $ = require( "jquery" );
 let { saveAs } =require('file-saver');
 const {calcStraightLine}=require("./Modules/PixelMath.js");
 const {rgbaToText,hexToRGB}=require("./Modules/PixelFunctions.js")
 const {CreatePath}= require("./Modules/FillToolFunctions.js")
-var socket=io.connect('http://localhost:3000',{transports: ['websocket']});
+var socket=io.connect('https://warm-lake-32915.herokuapp.com',{transports: ['websocket']});
 var canvas=document.getElementById('Canvas');
 var ctx=canvas.getContext('2d');
 //var button=document.getElementById('myButton');
