@@ -1,7 +1,7 @@
 {
     "events": {
-        "restart": "watchify public/Draw.js -o public/bundle/bundle.js & node server.js",
-        "start":"watchify public/Draw.js -o public/bundle/bundle.js & node server.js"
+        "restart": "watchify public/ScriptsAndStyles/Draw.js -o public/bundle/bundle.js & node server.js",
+        "start":"watchify public/ScriptsAndStyles/Draw.js -o public/bundle/bundle.js & node server.js"
         
       }
    }
