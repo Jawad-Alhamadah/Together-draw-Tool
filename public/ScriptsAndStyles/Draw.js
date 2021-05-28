@@ -33,7 +33,7 @@ const {
   CreatePath
 } = require("../Modules/FillToolFunctions.js")
 // /https://warm-lake-32915.herokuapp.com
-var socket = io.connect('http://localhost:3000', {
+var socket = io.connect('https://warm-lake-32915.herokuapp.com', {
   transports: ['websocket']
 });
 var canvas = document.getElementById('Canvas');
