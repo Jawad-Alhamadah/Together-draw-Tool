@@ -11,7 +11,5 @@ function Queue(){
         }
       };
       this.peek=function(){return 0<a.length?a[b]:void 0}
-
-
   };
 module.exports=Queue;

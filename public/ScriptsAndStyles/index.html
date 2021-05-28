@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <link rel="stylesheet" href="./styles.css">
+  <meta charset="utf-8">
+  <title></title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.0/socket.io.js"></script>
+
+  </script>
+
+</head>
+
+<body>
+
+  <div id="fullCanv">
+    <div id="toolsDiv">
+      <div id="BrushTool"></div>
+      <div id="ColorPickerTool"></div>
+      <div id="BucketTool"></div>
+      <div id="EraserTool"></div>
+      <div id="BrushSizeUP"></div>
+      <div id="BrushSizeDown"></div>
+    </div>
+
+    <textarea id="commentBox" cols="50" rows="5" class='inputClass BorderStyle BorderRadius'></textarea>
+    <div>
+
+      <input type="image" src="floppy-disk-2.png" name="saveForm" id="SaveBtn"></input>
+
+    </div>
+
+    <button type="button" id="CommentBtn" class="myButton BorderStyle BorderRadius">Send</button>
+
+
+    <div id='chat'>
+      <div id="chatArea" class='inputClass BorderStyle BorderRadius' id="chatArea" readonly>
+
+      </div>
+
+    </div>
+    <div id="whiteDiv">
+      <div id="container" class="BorderStyle BorderRadius">
+
+        <canvas id="Canvas">
+        </canvas>
+
+      </div>
+      <div id="ColorsDiv" class="BorderStyle BorderRadius">
+
+        <div id="ColorPallet"></div>
+
+        <input type="color" id="ColorInput"> </input>
+        <div id="ColorWheel"></div>
+
+      </div>
+    </div>
+  </div>
+  <div id="PickANameWindow">Pick A Name:
+    <button type="Name" id="NameBtn">Confirm</button>
+    <textarea cols="50" rows="1" id="NameBox" class='inputClass BorderStyle BorderRadius'></textarea>
+  </div>
+  <footer id="ArtRefs">
+    <div>Icons made by <a href="https://smashicons.com/" title="Smashicons">Smashicons</a> from <a
+        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+    <div>Icons made by <a href="https://www.flaticon.com/authors/icongeek26" title="Icongeek26">Icongeek26</a> from <a
+        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+    <div>Icons made by <a href="" title="Those Icons">Those Icons</a> from <a href="https://www.flaticon.com/"
+        title="Flaticon">www.flaticon.com</a></div>
+    <div>Icons made by <a href="https://www.flaticon.com/authors/itim2101" title="itim2101">itim2101</a> from <a
+        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+    <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a
+        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+    <div>Icons made by <a href="" title="monkik">monkik</a> from <a href="https://www.flaticon.com/"
+        title="Flaticon">www.flaticon.com</a></div>
+    <div>Icons made by <a href="" title="xnimrodx">xnimrodx</a> from <a href="https://www.flaticon.com/"
+        title="Flaticon">www.flaticon.com</a></div>
+    </footer>
+</body>
+<script src="bundle.js"></script>
+
+</html>
