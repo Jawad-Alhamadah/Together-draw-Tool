@@ -11501,6 +11501,7 @@ const {
 } = require("../Modules/FillToolFunctions.js")
 // /https://warm-lake-32915.herokuapp.com
 //https://together-draw-stuff.herokuapp.com
+//http://localhost:3000
 var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
 });
@@ -11848,7 +11849,7 @@ function DrawCanv() {
       left: PreviousMouseX - CorrectionX,
       top: PreviousMouseY - CorrectionY
     }, color, BrushSize);
-
+//
     //
     for (var i = 0; i < list.length; i++) {
       ctx.fillStyle = rgbaToText(list[i].color);
@@ -12054,7 +12055,7 @@ $("#NameBtn").click(function () {
   }
 
 })
-setInterval(DrawCanv, 50);
+setInterval(DrawCanv, 15);
 window.onkeydown = handleKeyDown;
 
 function handleKeyDown(event) {
