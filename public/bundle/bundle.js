@@ -11628,7 +11628,6 @@ $("#BucketTool").click((e) => {
 
 })
 socket.on('connect', () => {
-
   listOfUserNameSpan.set(socket.id, {
     span: document.createElement("span"),
     cursor: document.createElement("div")
@@ -11645,6 +11644,8 @@ socket.on('connect', () => {
   tempcursorImage.id="Image_1";
   tempcursorImage_2.id="Image_2";
   document.getElementById(socket.id + "-span").innerHTML = Username
+
+  document.getElementById("LoadingSpan").innerText="Pick A Name:"
 
 });
 canvas.addEventListener('mousedown', function (e) {
