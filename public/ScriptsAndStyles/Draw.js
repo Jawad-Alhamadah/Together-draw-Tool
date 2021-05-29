@@ -588,7 +588,7 @@ $("#NameBtn").click(function () {
   }
 
 })
-setInterval(DrawCanv, 15);
+setInterval(DrawCanv, 10);
 window.onkeydown = handleKeyDown;
 
 function handleKeyDown(event) {
