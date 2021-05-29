@@ -34,7 +34,7 @@ const {
 } = require("../Modules/FillToolFunctions.js")
 // /https://warm-lake-32915.herokuapp.com
 //https://together-draw-stuff.herokuapp.com
-var socket = io.connect('ws://https://together-draw-stuff.herokuapp.com', {
+var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
 });
 var canvas = document.getElementById('Canvas');
