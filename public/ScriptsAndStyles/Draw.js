@@ -82,13 +82,15 @@ var EraserBool = false;
 var BrushBool = true;
 var ColorPickerBool = false;
 var BucketBool = false;
+var UpdateCount = 0
+var ListofLists = []
 $("#SaveBtn").click((e) => document.getElementById("Canvas").toBlob(function (blob) {
   saveAs(blob, "pretty image.png");
 }))
 
 
 $("#BrushSizeUP").click((e) => {
-  
+
   if (BrushSize < 6) BrushSize++
   // $("#fullCanv").children.css("opacity","100%")
 })
@@ -112,8 +114,8 @@ $("#BrushTool").click((e) => {
   if (!BrushBool) {
 
     //$("#" + socket.id + "-cursor >img").attr("src",'')
-    
-    
+
+
     $("#Image_2").attr("src", "")
     $("#toolsDiv").children().css("opacity", "100%")
     $(e.target).css("opacity", "30%")
@@ -151,15 +153,15 @@ $("#BucketTool").click((e) => {
     $(e.target).css("opacity", "30%")
     $("#Image_2").attr("src", "paint-bucket-4.png")
     //$("#" + socket.id + "-cursor >img").css("width","40px")
- 
-   // $("#" + socket.id + "-cursor").css("background-image", "url(Cursor.png)")
+
+    // $("#" + socket.id + "-cursor").css("background-image", "url(Cursor.png)")
     // console.log("#" + socket.id + "-cursor")
     BrushBool = false;
     ColorPickerBool = false;
     EraserBool = false;
     BucketBool = true;
   }
-//k
+  //k
 
 })
 socket.on('connect', () => {
@@ -176,19 +178,19 @@ socket.on('connect', () => {
   listOfUserNameSpan.get(socket.id).cursor.appendChild(tempcursorImage)
   listOfUserNameSpan.get(socket.id).cursor.appendChild(tempcursorImage_2)
   tempcursorImage.src = "Cursor.png"
-  tempcursorImage.id="Image_1";
-  tempcursorImage_2.id="Image_2";
+  tempcursorImage.id = "Image_1";
+  tempcursorImage_2.id = "Image_2";
   document.getElementById(socket.id + "-span").innerHTML = Username
-  document.getElementById("LoadingSpan").innerText="Pick A Name:"
-  $("#NameBtn").css("pointer-events","auto")
-  $("#NameBtn").css("filter","brightness(100%)")
-  
-  
+  document.getElementById("LoadingSpan").innerText = "Pick A Name:"
+  $("#NameBtn").css("pointer-events", "auto")
+  $("#NameBtn").css("filter", "brightness(100%)")
+
+
 
 
 });
 canvas.addEventListener('mousedown', function (e) {
-  if(e.which==1){
+  if (e.which == 1) {
     cont = true;
     if (BucketBool) {
       var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
@@ -207,17 +209,17 @@ canvas.addEventListener('mousedown', function (e) {
         })
       }
     }
-    if(ColorPickerBool){
-     var tempCol=ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-      color[0]=tempCol[0];
-      color[1]=tempCol[1];
-      color[2]=tempCol[2];
-      color[3]=tempCol[3];
+    if (ColorPickerBool) {
+      var tempCol = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
+      color[0] = tempCol[0];
+      color[1] = tempCol[1];
+      color[2] = tempCol[2];
+      color[3] = tempCol[3];
     }
 
 
   }
-  
+
 });
 ///
 
@@ -306,7 +308,7 @@ socket.on("newUserSpans", function (data) {
     document.getElementById("container").appendChild(tempcursor)
     tempcursor.appendChild(tempcursorImage)
     //tempcursor.appendChild(tempCursorToolIcon)
-  
+
     tempcursorImage.src = "Cursor.png"
     tempcursor.id = data.cursorid;
     $("#" + data.id).css("left", data.x)
@@ -382,14 +384,20 @@ function DrawCanv() {
       left: PreviousMouseX - CorrectionX,
       top: PreviousMouseY - CorrectionY
     }, color, BrushSize);
-//
+    //
     //
     for (var i = 0; i < list.length; i++) {
       ctx.fillStyle = rgbaToText(list[i].color);
       ctx.fillRect(list[i].x, list[i].y, BrushSize, BrushSize);
     }
     //
-    socket.emit("MouseEvents", list);
+    UpdateCount++;
+    ListofLists.push(list) //socket.emit("MouseEvents", list);
+  }
+  if (UpdateCount > 20) {
+    UpdateCount = 0;
+    ListofLists.forEach((item) => socket.emit("MouseEvents", item))
+    ListofLists = []
   }
 }
 
@@ -500,14 +508,14 @@ function CreatePalletDivs() {
   }
 }
 
-$("#ColorInput").on("input",(e) => {
+$("#ColorInput").on("input", (e) => {
   if (BucketBool) {
-    BucketColor = hexToRGB( e.target.value, 255)
+    BucketColor = hexToRGB(e.target.value, 255)
 
   }
   if (BrushBool) {
     color = hexToRGB(e.target.value, 255)
-   
+
   }
 
 
@@ -590,7 +598,9 @@ $("#NameBtn").click(function () {
 })
 setInterval(DrawCanv, 10);
 window.onkeydown = handleKeyDown;
-
+/////////////////
+///////////////
+////////////
 function handleKeyDown(event) {
   if (event.key === "t" && NamePicked) {
     var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
