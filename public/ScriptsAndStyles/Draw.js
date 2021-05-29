@@ -188,7 +188,7 @@ socket.on('connect', () => {
     event.preventDefault();
   });
   
-
+  setInterval(SendMoves,30)
 
 });
 canvas.addEventListener('mousedown', function (e) {
@@ -523,13 +523,7 @@ $("body").mousemove(function (e) {
   $("#" + socket.id + "-span").css("top", e.pageY - (CorrectionY - 15))
   $("#" + socket.id + "-cursor").css("left", e.pageX - (CorrectionX + 18))
   $("#" + socket.id + "-cursor").css("top", e.pageY - (CorrectionY + 12))
-  socket.emit("UserMoved", {
-    x: e.pageX - CorrectionX,
-    y: e.pageY - CorrectionY,
-    id: socket.id + "-span",
-    cursorid: socket.id + "-cursor",
-    Username: Username
-  })
+ 
   PreviousMouseX = mouseX;
   PreviousMouseY = mouseY;
   mouseX = e.pageX;
@@ -589,6 +583,16 @@ $("#NameBtn").click(function () {
 
 })
 setInterval(DrawCanv, 10);
+
+function SendMoves(){
+  socket.emit("UserMoved", {
+    x: mouseX - CorrectionX,
+    y: mouseY - CorrectionY,
+    id: socket.id + "-span",
+    cursorid: socket.id + "-cursor",
+    Username: Username
+  })
+}
 window.onkeydown = handleKeyDown;
 /////////////////
 function handleKeyDown(event) {
