@@ -11500,7 +11500,8 @@ const {
   CreatePath
 } = require("../Modules/FillToolFunctions.js")
 // /https://warm-lake-32915.herokuapp.com
-var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
+//https://together-draw-stuff.herokuapp.com
+var socket = io.connect('//https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
 });
 var canvas = document.getElementById('Canvas');
@@ -11644,8 +11645,12 @@ socket.on('connect', () => {
   tempcursorImage.id="Image_1";
   tempcursorImage_2.id="Image_2";
   document.getElementById(socket.id + "-span").innerHTML = Username
-
   document.getElementById("LoadingSpan").innerText="Pick A Name:"
+  $("#NameBtn").css("pointer-events","auto")
+  $("#NameBtn").css("filter","brightness(100%)")
+  
+  
+
 
 });
 canvas.addEventListener('mousedown', function (e) {
