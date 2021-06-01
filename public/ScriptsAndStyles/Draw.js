@@ -50,7 +50,7 @@ const {Socket_DrawEvents_Recieved,
        ChatCount_Inc   }=require("../Modules/SocketOnFunctions.js")
 //https://together-draw-stuff.herokuapp.com
 //http://localhost:3000
-var socket = io.connect('http://localhost:3000', {
+var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
 });
 var canvas = document.getElementById('Canvas');
