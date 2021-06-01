@@ -19,30 +19,32 @@ var BrushToolImageUrl = "BrushTool.png";
 var BrushUpImageUrl = "paint-brush.png";
 
 var $ = require("jquery");
-let {
-  saveAs
-} = require('file-saver');
-const {
-  calcStraightLine
-} = require("../Modules/PixelMath.js");
-const {
-  rgbaToText,
-  hexToRGB
-} = require("../Modules/PixelFunctions.js")
-const {
-  CreatePath
-} = require("../Modules/FillToolFunctions.js")
-// /https://warm-lake-32915.herokuapp.com
+let {saveAs} = require('file-saver');
+const {calcStraightLine} = require("../Modules/PixelMath.js");
+const {rgbaToText,hexToRGB} = require("../Modules/PixelFunctions.js")
+const {CreatePath} = require("../Modules/FillToolFunctions.js")
+const {UserNameAndCursorDivsSetup, PushColors}=require("../Modules/SetUpFunctions.js")
+const {Socket_DrawEvents_Recieved,
+       Socket_MouseEvents_Recieved,
+       Socket_NewUser_Recieved,
+       Socket_HandleUserMovement_Recieved,
+       Socket_FillEvent_Recieved,
+       Socket_NameChangeEvent_Recieved,
+       Socket_CommentEvent_Recieved,
+       ReturnChatCount,
+       ReturnChatLimit,
+       ChatCount_Set,
+       ChatCount_Inc   }=require("../Modules/SocketOnFunctions.js")
 //https://together-draw-stuff.herokuapp.com
 //http://localhost:3000
-var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
+var socket = io.connect('http://localhost:3000', {
   transports: ['websocket']
 });
 var canvas = document.getElementById('Canvas');
 var ctx = canvas.getContext('2d');
-var id, Username;
+var  Username;
 Username = "anon"
-var chatLimit = 20;
+//var chatLimit = 20;
 var cont = false;
 var CorrectionX = 120;
 var CorrectionY = 19;
@@ -50,10 +52,9 @@ var mouseX;
 var mouseY;
 var PreviousMouseX;
 var PreviousMouseY;
-var PalletTop = 530;
+
 var color = '#000000';
 var BrushSize = 2;
-var BrushSizeBool;
 color = hexToRGB(color, 255)
 
 var BucketColor = []
@@ -62,7 +63,6 @@ BucketColor[1] = color[1];
 BucketColor[2] = color[2];
 BucketColor[3] = color[3];
 var allColors = []
-var points = [];
 var MouseEventsList = [];
 ctx.canvas.width = 1094;
 ctx.canvas.height = 500;
@@ -73,24 +73,42 @@ var canvWidth = ctx.canvas.width;
 ctx.fillStyle = "black";
 var canvHeight = ctx.canvas.height;
 
-var chat = document.getElementById("chatArea")
-chat.value = "\n";
+//var chat = document.getElementById("chatArea")
+
 var NamePicked = false;
-const listOfUserNameSpan = new Map();
 var chatCounter = 0;
 var EraserBool = false;
 var BrushBool = true;
 var ColorPickerBool = false;
 var BucketBool = false;
+
+
+socket.on('connect', () => {
+  //////
+  UserNameAndCursorDivsSetup(socket,Username)
+  
+  Socket_DrawEvents_Recieved(ctx,color,socket)
+  Socket_MouseEvents_Recieved(ctx,socket);
+  Socket_HandleUserMovement_Recieved(socket)
+  Socket_NewUser_Recieved(socket)
+  Socket_FillEvent_Recieved(ctx,color,socket)
+  Socket_NameChangeEvent_Recieved(socket)
+  Socket_CommentEvent_Recieved(socket)
+    setInterval(SendMoves,30)
+  
+  });
+
+
+
+
 $("#SaveBtn").click((e) => document.getElementById("Canvas").toBlob(function (blob) {
   saveAs(blob, "pretty image.png");
 }))
 
-
 $("#BrushSizeUP").click((e) => {
-  
+
   if (BrushSize < 6) BrushSize++
-  // $("#fullCanv").children.css("opacity","100%")
+
 })
 $("#BrushSizeDown").click((e) => {
   if (BrushSize > 2) BrushSize--
@@ -110,10 +128,6 @@ $("#EraserTool").click((e) => {
 })
 $("#BrushTool").click((e) => {
   if (!BrushBool) {
-
-    //$("#" + socket.id + "-cursor >img").attr("src",'')
-    
-    
     $("#Image_2").attr("src", "")
     $("#toolsDiv").children().css("opacity", "100%")
     $(e.target).css("opacity", "30%")
@@ -147,13 +161,8 @@ $("#BucketTool").click((e) => {
     BucketColor[2] = color[2];
     BucketColor[3] = color[3];
     $("#toolsDiv").children().css("opacity", "100%")
-    // $("#toolsDiv").children().hover(function(){$(this).css("opacity", "100%")})
     $(e.target).css("opacity", "30%")
     $("#Image_2").attr("src", "paint-bucket-4.png")
-    //$("#" + socket.id + "-cursor >img").css("width","40px")
- 
-   // $("#" + socket.id + "-cursor").css("background-image", "url(Cursor.png)")
-    // console.log("#" + socket.id + "-cursor")
     BrushBool = false;
     ColorPickerBool = false;
     EraserBool = false;
@@ -162,35 +171,7 @@ $("#BucketTool").click((e) => {
 //k
 
 })
-socket.on('connect', () => {
-  listOfUserNameSpan.set(socket.id, {
-    span: document.createElement("span"),
-    cursor: document.createElement("div")
-  });
-  listOfUserNameSpan.get(socket.id).span.id = socket.id + "-span";
-  listOfUserNameSpan.get(socket.id).cursor.id = socket.id + "-cursor";
-  document.getElementById("container").appendChild(listOfUserNameSpan.get(socket.id).span)
-  document.getElementById("container").appendChild(listOfUserNameSpan.get(socket.id).cursor)
-  var tempcursorImage = document.createElement("img")
-  var tempcursorImage_2 = document.createElement("img")
-  listOfUserNameSpan.get(socket.id).cursor.appendChild(tempcursorImage)
-  listOfUserNameSpan.get(socket.id).cursor.appendChild(tempcursorImage_2)
-  tempcursorImage.src = "Cursor.png"
-  tempcursorImage.id="Image_1";
-  tempcursorImage_2.id="Image_2";
-  document.getElementById(socket.id + "-span").innerHTML = Username
-  document.getElementById("LoadingSpan").innerText="Pick A Name:"
-  $("#NameBtn").css("pointer-events","auto")
-  $("#NameBtn").css("filter","brightness(100%)")
-  document.querySelector("#NameBox").addEventListener("keydown", event => {
-    if (event.key !== "Enter") return;
-    document.querySelector("#NameBtn").click();
-    event.preventDefault();
-  });
-  
-  setInterval(SendMoves,30)
 
-});
 canvas.addEventListener('mousedown', function (e) {
   if(e.which==1){
     cont = true;
@@ -202,7 +183,7 @@ canvas.addEventListener('mousedown', function (e) {
           x: mouseX - CorrectionX,
           y: mouseY - CorrectionY,
           color: tempColor
-        }, ctx, points, BucketColor) //ctx.getImageData(mouseX, mouseY, 1, 1).data
+        }, ctx, BucketColor) //ctx.getImageData(mouseX, mouseY, 1, 1).data
         socket.emit('fill', {
           x: mouseX - CorrectionX,
           y: mouseY - CorrectionY,
@@ -218,8 +199,6 @@ canvas.addEventListener('mousedown', function (e) {
       color[2]=tempCol[2];
       color[3]=tempCol[3];
     }
-
-
   }
   
 });
@@ -228,154 +207,7 @@ canvas.addEventListener('mousedown', function (e) {
 canvas.addEventListener('mouseup', function () {
   cont = false;
 });
-socket.on("NameChange", function (data) {
-  document.getElementById(data.id).innerHTML = data.Username
-})
-socket.on('draw', function (data) {
-  data.data.forEach((item, i) => {
 
-    if (item.command === "DrawMouseEvent") {
-      ctx.fillStyle = rgbaToText(item.data.color);
-      ctx.fillRect(item.data.x, item.data.y, item.data.BrushSize, item.data.BrushSize);
-    }
-    if (item.command === "FillMouseEvent") {
-      var temp = color.slice(0);
-      color[0] = item.data.hostColor[0];
-      color[1] = item.data.hostColor[1];
-      color[2] = item.data.hostColor[2];
-      color[3] = item.data.hostColor[3];
-      CreatePath({
-        x: item.data.x,
-        y: item.data.y,
-        color: item.data.color
-      }, ctx, points, color)
-      color[0] = temp[0];
-      color[1] = temp[1];
-      color[2] = temp[2];
-      color[3] = temp[3];
-    }
-
-  });
-
-})
-
-socket.on("MouseEvent", function (data) {
-  data.points.forEach((item, i) => {
-    if (item.y < PalletTop - 10) {
-      ctx.fillStyle = rgbaToText(data.color);
-      ctx.beginPath();
-      ctx.arc(item.x, item.y, 0.5, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-  });
-
-})
-socket.on("UserMoved", function (data) {
-  if (document.getElementById(data.id) === null) {
-    var tempspan = document.createElement("span")
-    var tempcursor = document.createElement("div")
-    var tempcursorImage = document.createElement("img")
-    tempspan.id = data.id;
-    tempcursor.id = data.cursorid;
-    document.getElementById("container").appendChild(tempspan)
-    document.getElementById("container").appendChild(tempcursor)
-    tempcursor.appendChild(tempcursorImage)
-    $("#" + data.id).css("left", data.x)
-    $("#" + data.id).css("top", data.y)
-    $("#" + data.id).css("position", "absolute")
-    tempcursorImage.src = "Cursor.png"
-    tempcursor.id = data.cursorid;
-    $("#" + data.cursorid).css("left", data.x - 12)
-    $("#" + data.cursorid).css("top", data.y - 12)
-    $("#" + data.cursorid).css("position", "absolute")
-    document.getElementById(data.id).innerHTML = data.Username
-  } else {
-    $("#" + data.id).css("left", data.x)
-    $("#" + data.id).css("top", data.y)
-    $("#" + data.id).css("position", "absolute")
-    $("#" + data.cursorid).css("left", data.x - 12)
-    $("#" + data.cursorid).css("top", data.y - 12)
-    $("#" + data.cursorid).css("position", "absolute")
-  }
-})
-socket.on("newUserSpans", function (data) {
-  data.forEach(function (data) {
-    var tempspan = document.createElement("span")
-    var tempcursorImage = document.createElement("img")
-    tempspan.id = data.id;
-    var tempcursor = document.createElement("div")
-    //var tempCursorToolIcon=document.createElement("img")
-
-    document.getElementById("container").appendChild(tempspan)
-    document.getElementById("container").appendChild(tempcursor)
-    tempcursor.appendChild(tempcursorImage)
-    //tempcursor.appendChild(tempCursorToolIcon)
-  
-    tempcursorImage.src = "Cursor.png"
-    tempcursor.id = data.cursorid;
-    $("#" + data.id).css("left", data.x)
-    $("#" + data.id).css("top", data.y)
-    $("#" + data.id).css("position", "absolute")
-    $("#" + data.cursorid).css("left", data.x - 12)
-    $("#" + data.cursorid).css("top", data.y - 12)
-    $("#" + data.cursorid).css("position", "absolute")
-    document.getElementById(data.id).innerHTML = data.Username
-  })
-})
-
-socket.on('fill', function (data) {
-
-  var temp = color.slice(0);
-  color[0] = data.hostColor[0];
-  color[1] = data.hostColor[1];
-  color[2] = data.hostColor[2];
-  color[3] = data.hostColor[3];
-
-  CreatePath({
-    x: data.x,
-    y: data.y,
-    color: data.color
-  }, ctx, points, color)
-
-  color[0] = temp[0];
-  color[1] = temp[1];
-  color[2] = temp[2];
-  color[3] = temp[3];
-
-
-})
-///////////////////
-
-socket.on('comment', function (data) {
-  chat = document.getElementById("chatArea")
-  var RecievedCommentSpan = document.createElement('div')
-  RecievedCommentSpan.classList = "blueSpan";
-  RecievedCommentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
-  RecievedCommentSpan.value = "  " + data + "\n";
-  RecievedCommentSpan.innerHTML = " \n" + data;
-  if (chatCounter > chatLimit) {
-    chatCounter = 0;
-    chat.innerHTML = ''
-  }
-  chatCounter++;
-  chat.append(RecievedCommentSpan);
-
-})
-socket.on('new', function (data) {
-  ctx.putImageData(data.image, 0, 0);
-})
-
-socket.on('myname', function (data) {
-  id = data.id
-})
-
-function getMousePos(canvas, evt) {
-  var rect = canvas.getBoundingClientRect();
-  return {
-    x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
-    y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
-  };
-}
 
 function DrawCanv() {
   if (cont && (BrushBool || EraserBool)) {
@@ -386,7 +218,6 @@ function DrawCanv() {
       left: PreviousMouseX - CorrectionX,
       top: PreviousMouseY - CorrectionY
     }, color, BrushSize);
-//
     //
     for (var i = 0; i < list.length; i++) {
       ctx.fillStyle = rgbaToText(list[i].color);
@@ -397,93 +228,9 @@ function DrawCanv() {
   }
 }
 
-function InitialSetUp() {}
-
 function CreatePalletDivs() {
-  allColors.push('#000000');
-  allColors.push('#FFFFFF');
-  allColors.push('#999900');
-  allColors.push('#4C9900');
-  allColors.push('#009900');
-  allColors.push('#00994C');
-  allColors.push('#009999');
-  allColors.push('#004C99');
-  allColors.push('#000099');
-  allColors.push('#4C0099');
-  allColors.push('#990099');
-  allColors.push('#99004C')
-
-  allColors.push('#FF0000');
-  allColors.push('#FF8000');
-  allColors.push('#FFFF00');
-  allColors.push('#80FF00');
-  allColors.push('#00FF00');
-  allColors.push('#00FF80');
-  allColors.push('#00FFFF');
-  allColors.push('#0080FF');
-  allColors.push('#0000FF');
-  allColors.push('#7F00FF');
-  allColors.push('#FF00FF');
-  allColors.push('#58906F');
-  allColors.push('#FF007F');
-  //
-
-  allColors.push('#FF9999');
-  allColors.push('#FFCC99');
-  allColors.push('#FFFF99');
-  allColors.push('#CCFF99');
-  allColors.push('#99FF99');
-  allColors.push('#99FFCC');
-  allColors.push('#99FFFF');
-  allColors.push('#99CCFF');
-  allColors.push('#9999FF');
-  allColors.push('#CC99FF');
-  allColors.push('#FF99FF');
-  allColors.push('#FF99CC');
-  ////////////////////////////////////////
-  allColors.push('#663CE6');
-  allColors.push('#1413ED');
-  allColors.push('#1B46D6');
-  allColors.push('#2986F0');
-  allColors.push('#12A6E3'); /////
-  allColors.push('#2027E3');
-  allColors.push('#5D37F0');
-  allColors.push('#7729D6');
-  allColors.push('#AF21ED');
-  allColors.push('#DC0099');
-  allColors.push('#DC49E6'); ///////////////
-  allColors.push('#C72DE3')
-
-  allColors.push('#F046D3');
-  allColors.push('#D63574');
-  allColors.push('#D62F8B');
-  allColors.push('#D62F3B');
-  allColors.push('#E66250');
-  allColors.push('#E612C3');
-  allColors.push('#F03C7D');
-  allColors.push('#D6332D');
-  allColors.push('#D64A2D');
-  allColors.push('#E67D4E');
-  allColors.push('#E64B07');
-  allColors.push('#9F475F');
-  allColors.push('#F07D22');
-  //
-
-  allColors.push('#D68715');
-  allColors.push('#D69815');
-  allColors.push('#E6BE35');
-  allColors.push('#E6C412');
-  allColors.push('#F0E216');
-  allColors.push('#BFD60B');
-  allColors.push('#7BD60B');
-  allColors.push('#52E629');
-  allColors.push('#0EE612');
-  allColors.push('#1AF045');
-  allColors.push('#FD99FD');
-  allColors.push('#10D65B');
-  allColors.push('#E6456C');
+  PushColors(allColors)
   var colorpallentTemp = document.getElementById("ColorPallet")
-
   for (var i = 0; i < allColors.length; i++) {
     let tempPallet = document.createElement("div");
     colorpallentTemp.appendChild(tempPallet);
@@ -496,10 +243,7 @@ function CreatePalletDivs() {
         if (BrushBool) {
           color = hexToRGB("#" + e.target.id, 255)
         }
-
-
       }
-
     )
   }
 }
@@ -511,14 +255,11 @@ $("#ColorInput").on("input",(e) => {
   }
   if (BrushBool) {
     color = hexToRGB(e.target.value, 255)
-   
+
   }
-
-
 })
 CreatePalletDivs();
 $("body").mousemove(function (e) {
-  var p = getMousePos(ctx.canvas, e);
   $("#" + socket.id + "-span").css("left", e.pageX - (CorrectionX - 15))
   $("#" + socket.id + "-span").css("top", e.pageY - (CorrectionY - 15))
   $("#" + socket.id + "-cursor").css("left", e.pageX - (CorrectionX + 18))
@@ -540,19 +281,19 @@ $("#CommentBtn").click(function () {
   var commBox = document.getElementById("commentBox")
   socket.emit('comment', "  " + Username + ": " + commBox.value + "\n")
   var commentSpan = document.createElement('div');
-  chat = document.getElementById("chatArea");
+  var chat = document.getElementById("chatArea");
   commentSpan.value = Username + ": " + commBox.value + '\n';
   commentSpan.innerHTML = Username + ": " + commBox.value + '\n';
   commBox.value = "";
   commentSpan.classList = 'redSpan'
   commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
   chat.value = chat.value + commentSpan.value;
-  if (chatCounter > chatLimit) {
+  if (ReturnChatCount() > ReturnChatLimit()) {
     chat.innerHTML = '';
-    chatCounter = 0;
+    ChatCount_Set(0);
   }
   chat.append(commentSpan);
-  chatCounter++
+  ChatCount_Inc()
 })
 document.querySelector("#commentBox").addEventListener("keydown", event => {
   if (event.key !== "Enter") return;
@@ -604,7 +345,7 @@ function handleKeyDown(event) {
         x: mouseX - CorrectionX,
         y: mouseY - CorrectionY,
         color: tempColor
-      }, ctx, points, color) //ctx.getImageData(mouseX, mouseY, 1, 1).data
+      }, ctx, color) //ctx.getImageData(mouseX, mouseY, 1, 1).data
       socket.emit('fill', {
         x: mouseX - CorrectionX,
         y: mouseY - CorrectionY,

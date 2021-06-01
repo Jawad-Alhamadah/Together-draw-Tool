@@ -11085,7 +11085,7 @@ return jQuery;
    rgbaToText
  } = require("./PixelFunctions.js")
 
- function CreatePath(startingPoint, ctx, points, color) {
+ function CreatePath(startingPoint, ctx, color) {
    var backGroundColor = startingPoint.color;
    var startPoint = startingPoint;
    var currentPoint = startingPoint;
@@ -11094,10 +11094,10 @@ return jQuery;
      x: startPoint.x,
      y: startingPoint.y,
      color: backGroundColor
-   }, points, ctx, color)
+   }, ctx, color)
  }
 
- function splitFillBool(firstpoint, points, ctx, color) {
+ function splitFillBool(firstpoint, ctx, color) {
 
    var bottomPointsBool = []
    var i = 0;
@@ -11465,408 +11465,35 @@ function Queue(){
   };
 module.exports=Queue;
 },{}],8:[function(require,module,exports){
-//the Nodemon run script
-//nodemon --exec npm start --ignore 'public/bundle/*'  
-
-/////////
-//nodemon.json config
-///
-//{
-// "events": {
-//  "restart": "watchify public/Draw.js -o public/bundle/bundle.js & node server.js",
-//   "start":"watchify public/Draw.js -o public/bundle/bundle.js & node server.js"
-
-//   }
-// }
-//const io = require('socket.io')(80);
-var BucketToolImageUrl = "paint-Bukcet3.png";
-var EarserToolImageUrl = "eraser.png";
-var ColorPickerToolImageUrl = "color-picker.png";
-var BrushToolImageUrl = "BrushTool.png";
-var BrushUpImageUrl = "paint-brush.png";
 
 var $ = require("jquery");
-let {
-  saveAs
-} = require('file-saver');
-const {
-  calcStraightLine
-} = require("../Modules/PixelMath.js");
-const {
-  rgbaToText,
-  hexToRGB
-} = require("../Modules/PixelFunctions.js")
-const {
-  CreatePath
-} = require("../Modules/FillToolFunctions.js")
-// /https://warm-lake-32915.herokuapp.com
-//https://together-draw-stuff.herokuapp.com
-//http://localhost:3000
-var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
-  transports: ['websocket']
-});
-var canvas = document.getElementById('Canvas');
-var ctx = canvas.getContext('2d');
-var id, Username;
-Username = "anon"
-var chatLimit = 20;
-var cont = false;
-var CorrectionX = 120;
-var CorrectionY = 19;
-var mouseX;
-var mouseY;
-var PreviousMouseX;
-var PreviousMouseY;
-var PalletTop = 530;
-var color = '#000000';
-var BrushSize = 2;
-var BrushSizeBool;
-color = hexToRGB(color, 255)
+function UserNameAndCursorDivsSetup(socket,Username) {
 
-var BucketColor = []
-BucketColor[0] = color[0];
-BucketColor[1] = color[1];
-BucketColor[2] = color[2];
-BucketColor[3] = color[3];
-var allColors = []
-var points = [];
-var MouseEventsList = [];
-ctx.canvas.width = 1094;
-ctx.canvas.height = 500;
-ctx.strokeRect(20, 20, 1040, 445);
-ctx.fillStyle = "white";
-ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-var canvWidth = ctx.canvas.width;
-ctx.fillStyle = "black";
-var canvHeight = ctx.canvas.height;
+    var TempSpan = document.createElement("span");
+    var TempCursor = document.createElement("div")
 
-var chat = document.getElementById("chatArea")
-chat.value = "\n";
-var NamePicked = false;
-const listOfUserNameSpan = new Map();
-var chatCounter = 0;
-var EraserBool = false;
-var BrushBool = true;
-var ColorPickerBool = false;
-var BucketBool = false;
-$("#SaveBtn").click((e) => document.getElementById("Canvas").toBlob(function (blob) {
-  saveAs(blob, "pretty image.png");
-}))
-
-
-$("#BrushSizeUP").click((e) => {
-  
-  if (BrushSize < 6) BrushSize++
-  // $("#fullCanv").children.css("opacity","100%")
-})
-$("#BrushSizeDown").click((e) => {
-  if (BrushSize > 2) BrushSize--
-})
-$("#EraserTool").click((e) => {
-  if (!EraserBool) {
-    $("#Image_2").attr("src", "")
-    color = hexToRGB("#ffffff", 255);
-    $("#toolsDiv ").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    BrushBool = false;
-    ColorPickerBool = false;
-    EraserBool = true;
-    BucketBool = false;
-  }
-
-})
-$("#BrushTool").click((e) => {
-  if (!BrushBool) {
-
-    //$("#" + socket.id + "-cursor >img").attr("src",'')
-    
-    
-    $("#Image_2").attr("src", "")
-    $("#toolsDiv").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    BrushBool = true;
-    ColorPickerBool = false;
-    EraserBool = false;
-    BucketBool = false;
-  }
-
-})
-
-$("#ColorPickerTool").click((e) => {
-  if (!ColorPickerBool) {
-    $("#Image_2").attr("src", "dropper.png")
-    $("#toolsDiv").children().css("opacity", "100%")
-    // $("#toolsDiv").children().hover(function(){$(this).css("opacity", "100%")})
-    $(e.target).css("opacity", "30%")
-    BrushBool = false;
-    ColorPickerBool = true;
-    EraserBool = false;
-    BucketBool = false;
-  }
-
-})
-
-
-$("#BucketTool").click((e) => {
-  if (!BucketBool) {
-    BucketColor[0] = color[0];
-    BucketColor[1] = color[1];
-    BucketColor[2] = color[2];
-    BucketColor[3] = color[3];
-    $("#toolsDiv").children().css("opacity", "100%")
-    // $("#toolsDiv").children().hover(function(){$(this).css("opacity", "100%")})
-    $(e.target).css("opacity", "30%")
-    $("#Image_2").attr("src", "paint-bucket-4.png")
-    //$("#" + socket.id + "-cursor >img").css("width","40px")
- 
-   // $("#" + socket.id + "-cursor").css("background-image", "url(Cursor.png)")
-    // console.log("#" + socket.id + "-cursor")
-    BrushBool = false;
-    ColorPickerBool = false;
-    EraserBool = false;
-    BucketBool = true;
-  }
-//k
-
-})
-socket.on('connect', () => {
-  listOfUserNameSpan.set(socket.id, {
-    span: document.createElement("span"),
-    cursor: document.createElement("div")
-  });
-  listOfUserNameSpan.get(socket.id).span.id = socket.id + "-span";
-  listOfUserNameSpan.get(socket.id).cursor.id = socket.id + "-cursor";
-  document.getElementById("container").appendChild(listOfUserNameSpan.get(socket.id).span)
-  document.getElementById("container").appendChild(listOfUserNameSpan.get(socket.id).cursor)
-  var tempcursorImage = document.createElement("img")
-  var tempcursorImage_2 = document.createElement("img")
-  listOfUserNameSpan.get(socket.id).cursor.appendChild(tempcursorImage)
-  listOfUserNameSpan.get(socket.id).cursor.appendChild(tempcursorImage_2)
-  tempcursorImage.src = "Cursor.png"
-  tempcursorImage.id="Image_1";
-  tempcursorImage_2.id="Image_2";
-  document.getElementById(socket.id + "-span").innerHTML = Username
-  document.getElementById("LoadingSpan").innerText="Pick A Name:"
-  $("#NameBtn").css("pointer-events","auto")
-  $("#NameBtn").css("filter","brightness(100%)")
-  document.querySelector("#NameBox").addEventListener("keydown", event => {
-    if (event.key !== "Enter") return;
-    document.querySelector("#NameBtn").click();
-    event.preventDefault();
-  });
-  
-  setInterval(SendMoves,30)
-
-});
-canvas.addEventListener('mousedown', function (e) {
-  if(e.which==1){
-    cont = true;
-    if (BucketBool) {
-      var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-      if (!(mouseX - 9 > canvWidth || mouseY - 9 > canvHeight)) {
-        BoolFill = true;
-        CreatePath({
-          x: mouseX - CorrectionX,
-          y: mouseY - CorrectionY,
-          color: tempColor
-        }, ctx, points, BucketColor) //ctx.getImageData(mouseX, mouseY, 1, 1).data
-        socket.emit('fill', {
-          x: mouseX - CorrectionX,
-          y: mouseY - CorrectionY,
-          color: tempColor,
-          hostColor: BucketColor
-        })
-      }
-    }
-    if(ColorPickerBool){
-     var tempCol=ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-      color[0]=tempCol[0];
-      color[1]=tempCol[1];
-      color[2]=tempCol[2];
-      color[3]=tempCol[3];
-    }
-
-
-  }
-  
-});
-///
-
-canvas.addEventListener('mouseup', function () {
-  cont = false;
-});
-socket.on("NameChange", function (data) {
-  document.getElementById(data.id).innerHTML = data.Username
-})
-socket.on('draw', function (data) {
-  data.data.forEach((item, i) => {
-
-    if (item.command === "DrawMouseEvent") {
-      ctx.fillStyle = rgbaToText(item.data.color);
-      ctx.fillRect(item.data.x, item.data.y, item.data.BrushSize, item.data.BrushSize);
-    }
-    if (item.command === "FillMouseEvent") {
-      var temp = color.slice(0);
-      color[0] = item.data.hostColor[0];
-      color[1] = item.data.hostColor[1];
-      color[2] = item.data.hostColor[2];
-      color[3] = item.data.hostColor[3];
-      CreatePath({
-        x: item.data.x,
-        y: item.data.y,
-        color: item.data.color
-      }, ctx, points, color)
-      color[0] = temp[0];
-      color[1] = temp[1];
-      color[2] = temp[2];
-      color[3] = temp[3];
-    }
-
-  });
-
-})
-
-socket.on("MouseEvent", function (data) {
-  data.points.forEach((item, i) => {
-    if (item.y < PalletTop - 10) {
-      ctx.fillStyle = rgbaToText(data.color);
-      ctx.beginPath();
-      ctx.arc(item.x, item.y, 0.5, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-  });
-
-})
-socket.on("UserMoved", function (data) {
-  if (document.getElementById(data.id) === null) {
-    var tempspan = document.createElement("span")
-    var tempcursor = document.createElement("div")
+    TempSpan.id = socket.id + "-span";
+    TempCursor.id = socket.id + "-cursor";
+    document.getElementById("container").appendChild(TempSpan)
+    document.getElementById("container").appendChild(TempCursor)
     var tempcursorImage = document.createElement("img")
-    tempspan.id = data.id;
-    tempcursor.id = data.cursorid;
-    document.getElementById("container").appendChild(tempspan)
-    document.getElementById("container").appendChild(tempcursor)
-    tempcursor.appendChild(tempcursorImage)
-    $("#" + data.id).css("left", data.x)
-    $("#" + data.id).css("top", data.y)
-    $("#" + data.id).css("position", "absolute")
+    var tempcursorImage_2 = document.createElement("img")
+    TempCursor.appendChild(tempcursorImage)
+    TempCursor.appendChild(tempcursorImage_2)
     tempcursorImage.src = "Cursor.png"
-    tempcursor.id = data.cursorid;
-    $("#" + data.cursorid).css("left", data.x - 12)
-    $("#" + data.cursorid).css("top", data.y - 12)
-    $("#" + data.cursorid).css("position", "absolute")
-    document.getElementById(data.id).innerHTML = data.Username
-  } else {
-    $("#" + data.id).css("left", data.x)
-    $("#" + data.id).css("top", data.y)
-    $("#" + data.id).css("position", "absolute")
-    $("#" + data.cursorid).css("left", data.x - 12)
-    $("#" + data.cursorid).css("top", data.y - 12)
-    $("#" + data.cursorid).css("position", "absolute")
-  }
-})
-socket.on("newUserSpans", function (data) {
-  data.forEach(function (data) {
-    var tempspan = document.createElement("span")
-    var tempcursorImage = document.createElement("img")
-    tempspan.id = data.id;
-    var tempcursor = document.createElement("div")
-    //var tempCursorToolIcon=document.createElement("img")
-
-    document.getElementById("container").appendChild(tempspan)
-    document.getElementById("container").appendChild(tempcursor)
-    tempcursor.appendChild(tempcursorImage)
-    //tempcursor.appendChild(tempCursorToolIcon)
-  
-    tempcursorImage.src = "Cursor.png"
-    tempcursor.id = data.cursorid;
-    $("#" + data.id).css("left", data.x)
-    $("#" + data.id).css("top", data.y)
-    $("#" + data.id).css("position", "absolute")
-    $("#" + data.cursorid).css("left", data.x - 12)
-    $("#" + data.cursorid).css("top", data.y - 12)
-    $("#" + data.cursorid).css("position", "absolute")
-    document.getElementById(data.id).innerHTML = data.Username
-  })
-})
-
-socket.on('fill', function (data) {
-
-  var temp = color.slice(0);
-  color[0] = data.hostColor[0];
-  color[1] = data.hostColor[1];
-  color[2] = data.hostColor[2];
-  color[3] = data.hostColor[3];
-
-  CreatePath({
-    x: data.x,
-    y: data.y,
-    color: data.color
-  }, ctx, points, color)
-
-  color[0] = temp[0];
-  color[1] = temp[1];
-  color[2] = temp[2];
-  color[3] = temp[3];
-
-
-})
-///////////////////
-
-socket.on('comment', function (data) {
-  chat = document.getElementById("chatArea")
-  var RecievedCommentSpan = document.createElement('div')
-  RecievedCommentSpan.classList = "blueSpan";
-  RecievedCommentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
-  RecievedCommentSpan.value = "  " + data + "\n";
-  RecievedCommentSpan.innerHTML = " \n" + data;
-  if (chatCounter > chatLimit) {
-    chatCounter = 0;
-    chat.innerHTML = ''
-  }
-  chatCounter++;
-  chat.append(RecievedCommentSpan);
-
-})
-socket.on('new', function (data) {
-  ctx.putImageData(data.image, 0, 0);
-})
-
-socket.on('myname', function (data) {
-  id = data.id
-})
-
-function getMousePos(canvas, evt) {
-  var rect = canvas.getBoundingClientRect();
-  return {
-    x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
-    y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
-  };
+    tempcursorImage.id = "Image_1";
+    tempcursorImage_2.id = "Image_2";
+    document.getElementById(socket.id + "-span").innerHTML = Username
+    document.getElementById("LoadingSpan").innerText = "Pick A Name:"
+    $("#NameBtn").css("pointer-events", "auto")
+    $("#NameBtn").css("filter", "brightness(100%)")
+    document.querySelector("#NameBox").addEventListener("keydown", event => {
+        if (event.key !== "Enter") return;
+        document.querySelector("#NameBtn").click();
+        event.preventDefault();
+    });
 }
-
-function DrawCanv() {
-  if (cont && (BrushBool || EraserBool)) {
-    var list = calcStraightLine({
-      left: mouseX - CorrectionX,
-      top: mouseY - CorrectionY
-    }, {
-      left: PreviousMouseX - CorrectionX,
-      top: PreviousMouseY - CorrectionY
-    }, color, BrushSize);
-//
-    //
-    for (var i = 0; i < list.length; i++) {
-      ctx.fillStyle = rgbaToText(list[i].color);
-      ctx.fillRect(list[i].x, list[i].y, BrushSize, BrushSize);
-    }
-    //
-    socket.emit("MouseEvents", list);
-  }
-}
-
-function InitialSetUp() {}
-
-function CreatePalletDivs() {
+function PushColors(allColors){
   allColors.push('#000000');
   allColors.push('#FFFFFF');
   allColors.push('#999900');
@@ -11949,8 +11576,420 @@ function CreatePalletDivs() {
   allColors.push('#FD99FD');
   allColors.push('#10D65B');
   allColors.push('#E6456C');
-  var colorpallentTemp = document.getElementById("ColorPallet")
+}
+module.exports = {
 
+    UserNameAndCursorDivsSetup,PushColors
+}
+},{"jquery":3}],9:[function(require,module,exports){
+const {rgbaToText} = require("./PixelFunctions.js")
+const {CreatePath} = require("./FillToolFunctions.js")
+var $ = require("jquery");
+var chatCounter=0;
+var chatLimit=20;
+function Socket_DrawEvents_Recieved(ctx,color,socket){
+
+    socket.on('draw', function (data) {
+        data.data.forEach((item, i) => {
+      
+          if (item.command === "DrawMouseEvent") {
+            ctx.fillStyle = rgbaToText(item.data.color);
+            ctx.fillRect(item.data.x, item.data.y, item.data.BrushSize, item.data.BrushSize);
+          }
+          if (item.command === "FillMouseEvent") {
+            var temp = color.slice(0);
+            color[0] = item.data.hostColor[0];
+            color[1] = item.data.hostColor[1];
+            color[2] = item.data.hostColor[2];
+            color[3] = item.data.hostColor[3];
+            CreatePath({
+              x: item.data.x,
+              y: item.data.y,
+              color: item.data.color
+            }, ctx, color)
+            color[0] = temp[0];
+            color[1] = temp[1];
+            color[2] = temp[2];
+            color[3] = temp[3];
+          }
+      
+        });
+      
+      })
+}
+
+
+function Socket_MouseEvents_Recieved(ctx,socket){
+    socket.on("MouseEvent", function (data) {
+        data.points.forEach((item, i) => {
+          if (item.y < ctx.canvas.height ) {
+            ctx.fillStyle = rgbaToText(data.color);
+            ctx.beginPath();
+            ctx.arc(item.x, item.y, 0.5, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        });
+      
+      })
+}
+
+function Socket_HandleUserMovement_Recieved(socket){
+    socket.on("UserMoved", function (data) {
+        if (document.getElementById(data.id) === null) {
+          var tempspan = document.createElement("span")
+          var tempcursor = document.createElement("div")
+          var tempcursorImage = document.createElement("img")
+          tempspan.id = data.id;
+          tempcursor.id = data.cursorid;
+          document.getElementById("container").appendChild(tempspan)
+          document.getElementById("container").appendChild(tempcursor)
+          tempcursor.appendChild(tempcursorImage)
+          $("#" + data.id).css("left", data.x)
+          $("#" + data.id).css("top", data.y)
+          $("#" + data.id).css("position", "absolute")
+          tempcursorImage.src = "Cursor.png"
+          tempcursor.id = data.cursorid;
+          $("#" + data.cursorid).css("left", data.x - 12)
+          $("#" + data.cursorid).css("top", data.y - 12)
+          $("#" + data.cursorid).css("position", "absolute")
+          document.getElementById(data.id).innerHTML = data.Username
+        } else {
+          $("#" + data.id).css("left", data.x)
+          $("#" + data.id).css("top", data.y)
+          $("#" + data.id).css("position", "absolute")
+          $("#" + data.cursorid).css("left", data.x - 12)
+          $("#" + data.cursorid).css("top", data.y - 12)
+          $("#" + data.cursorid).css("position", "absolute")
+        }
+      })
+}
+
+function Socket_NewUser_Recieved(socket){
+    socket.on("newUserSpans", function (data) {
+        data.forEach(function (data) {
+          var tempspan = document.createElement("span")
+          var tempcursorImage = document.createElement("img")
+          tempspan.id = data.id;
+          var tempcursor = document.createElement("div")
+          //var tempCursorToolIcon=document.createElement("img")
+      
+          document.getElementById("container").appendChild(tempspan)
+          document.getElementById("container").appendChild(tempcursor)
+          tempcursor.appendChild(tempcursorImage)
+          //tempcursor.appendChild(tempCursorToolIcon)
+        
+          tempcursorImage.src = "Cursor.png"
+          tempcursor.id = data.cursorid;
+          $("#" + data.id).css("left", data.x)
+          $("#" + data.id).css("top", data.y)
+          $("#" + data.id).css("position", "absolute")
+          $("#" + data.cursorid).css("left", data.x - 12)
+          $("#" + data.cursorid).css("top", data.y - 12)
+          $("#" + data.cursorid).css("position", "absolute")
+          document.getElementById(data.id).innerHTML = data.Username
+        })
+      })
+
+}
+
+
+function Socket_FillEvent_Recieved(ctx,color,socket){
+    socket.on('fill', function (data) {
+
+        var temp = color.slice(0);
+        color[0] = data.hostColor[0];
+        color[1] = data.hostColor[1];
+        color[2] = data.hostColor[2];
+        color[3] = data.hostColor[3];
+      
+        CreatePath({
+          x: data.x,
+          y: data.y,
+          color: data.color
+        }, ctx, color)
+      
+        color[0] = temp[0];
+        color[1] = temp[1];
+        color[2] = temp[2];
+        color[3] = temp[3];
+      
+      
+      })
+}
+function Socket_NameChangeEvent_Recieved(socket){
+
+    socket.on("NameChange", function (data) {
+        document.getElementById(data.id).innerHTML = data.Username
+      })
+}
+
+function Socket_CommentEvent_Recieved(socket){
+   
+    socket.on('comment', function (data) {
+        
+        var chat = document.getElementById("chatArea")
+        var RecievedCommentSpan = document.createElement('div')
+        RecievedCommentSpan.classList = "blueSpan";
+        RecievedCommentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
+        RecievedCommentSpan.value = "  " + data + "\n";
+        RecievedCommentSpan.innerHTML = " \n" + data;
+        if (chatCounter > chatLimit) {
+          chatCounter = 0;
+          chat.innerHTML = ''
+        }
+        chatCounter++;
+        chat.append(RecievedCommentSpan);
+      
+      })
+      //return chatCounter
+}
+
+function ReturnChatCount(){ return chatCounter}
+function ChatCount_Inc(){  chatCounter++}
+function ChatCount_Set(num){  chatCounter=num}
+function ReturnChatLimit(){ return chatLimit }
+
+module.exports = {
+    Socket_DrawEvents_Recieved,Socket_MouseEvents_Recieved,Socket_HandleUserMovement_Recieved,
+    Socket_NewUser_Recieved,Socket_FillEvent_Recieved,Socket_NameChangeEvent_Recieved,
+    Socket_CommentEvent_Recieved,ReturnChatCount,ReturnChatLimit,
+    ChatCount_Inc,ChatCount_Set
+   
+}
+},{"./FillToolFunctions.js":4,"./PixelFunctions.js":5,"jquery":3}],10:[function(require,module,exports){
+//the Nodemon run script
+//nodemon --exec npm start --ignore 'public/bundle/*'  
+
+/////////
+//nodemon.json config
+///
+//{
+// "events": {
+//  "restart": "watchify public/Draw.js -o public/bundle/bundle.js & node server.js",
+//   "start":"watchify public/Draw.js -o public/bundle/bundle.js & node server.js"
+
+//   }
+// }
+//const io = require('socket.io')(80);
+var BucketToolImageUrl = "paint-Bukcet3.png";
+var EarserToolImageUrl = "eraser.png";
+var ColorPickerToolImageUrl = "color-picker.png";
+var BrushToolImageUrl = "BrushTool.png";
+var BrushUpImageUrl = "paint-brush.png";
+
+var $ = require("jquery");
+let {saveAs} = require('file-saver');
+const {calcStraightLine} = require("../Modules/PixelMath.js");
+const {rgbaToText,hexToRGB} = require("../Modules/PixelFunctions.js")
+const {CreatePath} = require("../Modules/FillToolFunctions.js")
+const {UserNameAndCursorDivsSetup, PushColors}=require("../Modules/SetUpFunctions.js")
+const {Socket_DrawEvents_Recieved,
+       Socket_MouseEvents_Recieved,
+       Socket_NewUser_Recieved,
+       Socket_HandleUserMovement_Recieved,
+       Socket_FillEvent_Recieved,
+       Socket_NameChangeEvent_Recieved,
+       Socket_CommentEvent_Recieved,
+       ReturnChatCount,
+       ReturnChatLimit,
+       ChatCount_Set,
+       ChatCount_Inc   }=require("../Modules/SocketOnFunctions.js")
+//https://together-draw-stuff.herokuapp.com
+//http://localhost:3000
+var socket = io.connect('http://localhost:3000', {
+  transports: ['websocket']
+});
+var canvas = document.getElementById('Canvas');
+var ctx = canvas.getContext('2d');
+var  Username;
+Username = "anon"
+//var chatLimit = 20;
+var cont = false;
+var CorrectionX = 120;
+var CorrectionY = 19;
+var mouseX;
+var mouseY;
+var PreviousMouseX;
+var PreviousMouseY;
+
+var color = '#000000';
+var BrushSize = 2;
+color = hexToRGB(color, 255)
+
+var BucketColor = []
+BucketColor[0] = color[0];
+BucketColor[1] = color[1];
+BucketColor[2] = color[2];
+BucketColor[3] = color[3];
+var allColors = []
+var MouseEventsList = [];
+ctx.canvas.width = 1094;
+ctx.canvas.height = 500;
+ctx.strokeRect(20, 20, 1040, 445);
+ctx.fillStyle = "white";
+ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+var canvWidth = ctx.canvas.width;
+ctx.fillStyle = "black";
+var canvHeight = ctx.canvas.height;
+
+//var chat = document.getElementById("chatArea")
+
+var NamePicked = false;
+var chatCounter = 0;
+var EraserBool = false;
+var BrushBool = true;
+var ColorPickerBool = false;
+var BucketBool = false;
+
+
+socket.on('connect', () => {
+  //////
+  UserNameAndCursorDivsSetup(socket,Username)
+  
+  Socket_DrawEvents_Recieved(ctx,color,socket)
+  Socket_MouseEvents_Recieved(ctx,socket);
+  Socket_HandleUserMovement_Recieved(socket)
+  Socket_NewUser_Recieved(socket)
+  Socket_FillEvent_Recieved(ctx,color,socket)
+  Socket_NameChangeEvent_Recieved(socket)
+  Socket_CommentEvent_Recieved(socket)
+    setInterval(SendMoves,30)
+  
+  });
+
+
+
+
+$("#SaveBtn").click((e) => document.getElementById("Canvas").toBlob(function (blob) {
+  saveAs(blob, "pretty image.png");
+}))
+
+$("#BrushSizeUP").click((e) => {
+
+  if (BrushSize < 6) BrushSize++
+
+})
+$("#BrushSizeDown").click((e) => {
+  if (BrushSize > 2) BrushSize--
+})
+$("#EraserTool").click((e) => {
+  if (!EraserBool) {
+    $("#Image_2").attr("src", "")
+    color = hexToRGB("#ffffff", 255);
+    $("#toolsDiv ").children().css("opacity", "100%")
+    $(e.target).css("opacity", "30%")
+    BrushBool = false;
+    ColorPickerBool = false;
+    EraserBool = true;
+    BucketBool = false;
+  }
+
+})
+$("#BrushTool").click((e) => {
+  if (!BrushBool) {
+    $("#Image_2").attr("src", "")
+    $("#toolsDiv").children().css("opacity", "100%")
+    $(e.target).css("opacity", "30%")
+    BrushBool = true;
+    ColorPickerBool = false;
+    EraserBool = false;
+    BucketBool = false;
+  }
+
+})
+
+$("#ColorPickerTool").click((e) => {
+  if (!ColorPickerBool) {
+    $("#Image_2").attr("src", "dropper.png")
+    $("#toolsDiv").children().css("opacity", "100%")
+    // $("#toolsDiv").children().hover(function(){$(this).css("opacity", "100%")})
+    $(e.target).css("opacity", "30%")
+    BrushBool = false;
+    ColorPickerBool = true;
+    EraserBool = false;
+    BucketBool = false;
+  }
+
+})
+
+
+$("#BucketTool").click((e) => {
+  if (!BucketBool) {
+    BucketColor[0] = color[0];
+    BucketColor[1] = color[1];
+    BucketColor[2] = color[2];
+    BucketColor[3] = color[3];
+    $("#toolsDiv").children().css("opacity", "100%")
+    $(e.target).css("opacity", "30%")
+    $("#Image_2").attr("src", "paint-bucket-4.png")
+    BrushBool = false;
+    ColorPickerBool = false;
+    EraserBool = false;
+    BucketBool = true;
+  }
+//k
+
+})
+
+canvas.addEventListener('mousedown', function (e) {
+  if(e.which==1){
+    cont = true;
+    if (BucketBool) {
+      var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
+      if (!(mouseX - 9 > canvWidth || mouseY - 9 > canvHeight)) {
+        BoolFill = true;
+        CreatePath({
+          x: mouseX - CorrectionX,
+          y: mouseY - CorrectionY,
+          color: tempColor
+        }, ctx, BucketColor) //ctx.getImageData(mouseX, mouseY, 1, 1).data
+        socket.emit('fill', {
+          x: mouseX - CorrectionX,
+          y: mouseY - CorrectionY,
+          color: tempColor,
+          hostColor: BucketColor
+        })
+      }
+    }
+    if(ColorPickerBool){
+     var tempCol=ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
+      color[0]=tempCol[0];
+      color[1]=tempCol[1];
+      color[2]=tempCol[2];
+      color[3]=tempCol[3];
+    }
+  }
+  
+});
+///
+
+canvas.addEventListener('mouseup', function () {
+  cont = false;
+});
+
+
+function DrawCanv() {
+  if (cont && (BrushBool || EraserBool)) {
+    var list = calcStraightLine({
+      left: mouseX - CorrectionX,
+      top: mouseY - CorrectionY
+    }, {
+      left: PreviousMouseX - CorrectionX,
+      top: PreviousMouseY - CorrectionY
+    }, color, BrushSize);
+    //
+    for (var i = 0; i < list.length; i++) {
+      ctx.fillStyle = rgbaToText(list[i].color);
+      ctx.fillRect(list[i].x, list[i].y, BrushSize, BrushSize);
+    }
+    //
+    socket.emit("MouseEvents", list);
+  }
+}
+
+function CreatePalletDivs() {
+  PushColors(allColors)
+  var colorpallentTemp = document.getElementById("ColorPallet")
   for (var i = 0; i < allColors.length; i++) {
     let tempPallet = document.createElement("div");
     colorpallentTemp.appendChild(tempPallet);
@@ -11963,10 +12002,7 @@ function CreatePalletDivs() {
         if (BrushBool) {
           color = hexToRGB("#" + e.target.id, 255)
         }
-
-
       }
-
     )
   }
 }
@@ -11978,14 +12014,11 @@ $("#ColorInput").on("input",(e) => {
   }
   if (BrushBool) {
     color = hexToRGB(e.target.value, 255)
-   
+
   }
-
-
 })
 CreatePalletDivs();
 $("body").mousemove(function (e) {
-  var p = getMousePos(ctx.canvas, e);
   $("#" + socket.id + "-span").css("left", e.pageX - (CorrectionX - 15))
   $("#" + socket.id + "-span").css("top", e.pageY - (CorrectionY - 15))
   $("#" + socket.id + "-cursor").css("left", e.pageX - (CorrectionX + 18))
@@ -12007,19 +12040,19 @@ $("#CommentBtn").click(function () {
   var commBox = document.getElementById("commentBox")
   socket.emit('comment', "  " + Username + ": " + commBox.value + "\n")
   var commentSpan = document.createElement('div');
-  chat = document.getElementById("chatArea");
+  var chat = document.getElementById("chatArea");
   commentSpan.value = Username + ": " + commBox.value + '\n';
   commentSpan.innerHTML = Username + ": " + commBox.value + '\n';
   commBox.value = "";
   commentSpan.classList = 'redSpan'
   commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
   chat.value = chat.value + commentSpan.value;
-  if (chatCounter > chatLimit) {
+  if (ReturnChatCount() > ReturnChatLimit()) {
     chat.innerHTML = '';
-    chatCounter = 0;
+    ChatCount_Set(0);
   }
   chat.append(commentSpan);
-  chatCounter++
+  ChatCount_Inc()
 })
 document.querySelector("#commentBox").addEventListener("keydown", event => {
   if (event.key !== "Enter") return;
@@ -12071,7 +12104,7 @@ function handleKeyDown(event) {
         x: mouseX - CorrectionX,
         y: mouseY - CorrectionY,
         color: tempColor
-      }, ctx, points, color) //ctx.getImageData(mouseX, mouseY, 1, 1).data
+      }, ctx, color) //ctx.getImageData(mouseX, mouseY, 1, 1).data
       socket.emit('fill', {
         x: mouseX - CorrectionX,
         y: mouseY - CorrectionY,
@@ -12084,4 +12117,4 @@ function handleKeyDown(event) {
   if (event.key === "r") {}
 
 }
-},{"../Modules/FillToolFunctions.js":4,"../Modules/PixelFunctions.js":5,"../Modules/PixelMath.js":6,"file-saver":2,"jquery":3}]},{},[8]);
+},{"../Modules/FillToolFunctions.js":4,"../Modules/PixelFunctions.js":5,"../Modules/PixelMath.js":6,"../Modules/SetUpFunctions.js":8,"../Modules/SocketOnFunctions.js":9,"file-saver":2,"jquery":3}]},{},[10]);
