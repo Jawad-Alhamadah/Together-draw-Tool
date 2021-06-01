@@ -18,12 +18,25 @@ var ColorPickerToolImageUrl = "color-picker.png";
 var BrushToolImageUrl = "BrushTool.png";
 var BrushUpImageUrl = "paint-brush.png";
 
+var BackgroundIcon_1="kitty-1.png"
+var BackgroundIcon_2="paint-2.png"
+var BackgroundIcon_3="painting-3.png"
+var BackgroundIcon_4="paint-tube-4.png"
+var BackgroundIcon_5="Paint-5.png"
+var BackgroundIcon_6="Paint-6.png"
+
+var SaveIcon_1="floppy-disk.png"
+var SaveIcon_2="floppy-disk -2.png"
+var SaveIcon_3="floppy-disk-3.png"
+var SaveIcon_4="disk-4.png"
+
+
 var $ = require("jquery");
 let {saveAs} = require('file-saver');
 const {calcStraightLine} = require("../Modules/PixelMath.js");
 const {rgbaToText,hexToRGB} = require("../Modules/PixelFunctions.js")
 const {CreatePath} = require("../Modules/FillToolFunctions.js")
-const {UserNameAndCursorDivsSetup, PushColors}=require("../Modules/SetUpFunctions.js")
+const {UserNameAndCursorDivsSetup, PushColors,RandomizeChatIcon}=require("../Modules/SetUpFunctions.js")
 const {Socket_DrawEvents_Recieved,
        Socket_MouseEvents_Recieved,
        Socket_NewUser_Recieved,
@@ -44,7 +57,6 @@ var canvas = document.getElementById('Canvas');
 var ctx = canvas.getContext('2d');
 var  Username;
 Username = "anon"
-//var chatLimit = 20;
 var cont = false;
 var CorrectionX = 120;
 var CorrectionY = 19;
@@ -73,16 +85,15 @@ var canvWidth = ctx.canvas.width;
 ctx.fillStyle = "black";
 var canvHeight = ctx.canvas.height;
 
-//var chat = document.getElementById("chatArea")
-
 var NamePicked = false;
-var chatCounter = 0;
 var EraserBool = false;
 var BrushBool = true;
 var ColorPickerBool = false;
 var BucketBool = false;
 
-
+RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_2,BackgroundIcon_3,BackgroundIcon_4,BackgroundIcon_5,BackgroundIcon_6,SaveIcon_1,SaveIcon_2
+  ,SaveIcon_3,SaveIcon_4)
+CreatePalletDivs();
 socket.on('connect', () => {
   //////
   UserNameAndCursorDivsSetup(socket,Username)
@@ -97,9 +108,6 @@ socket.on('connect', () => {
     setInterval(SendMoves,30)
   
   });
-
-
-
 
 $("#SaveBtn").click((e) => document.getElementById("Canvas").toBlob(function (blob) {
   saveAs(blob, "pretty image.png");
@@ -153,7 +161,6 @@ $("#ColorPickerTool").click((e) => {
 
 })
 
-
 $("#BucketTool").click((e) => {
   if (!BucketBool) {
     BucketColor[0] = color[0];
@@ -168,8 +175,6 @@ $("#BucketTool").click((e) => {
     EraserBool = false;
     BucketBool = true;
   }
-//k
-
 })
 
 canvas.addEventListener('mousedown', function (e) {
@@ -183,7 +188,7 @@ canvas.addEventListener('mousedown', function (e) {
           x: mouseX - CorrectionX,
           y: mouseY - CorrectionY,
           color: tempColor
-        }, ctx, BucketColor) //ctx.getImageData(mouseX, mouseY, 1, 1).data
+        }, ctx, BucketColor) 
         socket.emit('fill', {
           x: mouseX - CorrectionX,
           y: mouseY - CorrectionY,
@@ -207,7 +212,6 @@ canvas.addEventListener('mousedown', function (e) {
 canvas.addEventListener('mouseup', function () {
   cont = false;
 });
-
 
 function DrawCanv() {
   if (cont && (BrushBool || EraserBool)) {
@@ -258,13 +262,12 @@ $("#ColorInput").on("input",(e) => {
 
   }
 })
-CreatePalletDivs();
+
 $("body").mousemove(function (e) {
   $("#" + socket.id + "-span").css("left", e.pageX - (CorrectionX - 15))
   $("#" + socket.id + "-span").css("top", e.pageY - (CorrectionY - 15))
   $("#" + socket.id + "-cursor").css("left", e.pageX - (CorrectionX + 18))
   $("#" + socket.id + "-cursor").css("top", e.pageY - (CorrectionY + 12))
- 
   PreviousMouseX = mouseX;
   PreviousMouseY = mouseY;
   mouseX = e.pageX;
@@ -321,7 +324,6 @@ $("#NameBtn").click(function () {
     $("#fullCanv").css("animation", " OpacityUp 1.2s");
     $("#fullCanv").css("animation-fill-mode", "  forwards")
   }
-
 })
 setInterval(DrawCanv, 10);
 
@@ -353,8 +355,7 @@ function handleKeyDown(event) {
         hostColor: color
       })
     }
-
   }
-  if (event.key === "r") {}
+
 
 }
