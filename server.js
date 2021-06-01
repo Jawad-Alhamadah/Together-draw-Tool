@@ -29,7 +29,6 @@ io.on('connection', function (socket) {
   socket.on('disconnect', function () {
     connectCounter--;
   });
-  socket.emit('myname', socket.id);
   UserNameList.push({
     Name: "anon",
     Id: socket.id

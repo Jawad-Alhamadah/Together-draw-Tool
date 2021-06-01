@@ -9,7 +9,7 @@
    rgbaToText
  } = require("./PixelFunctions.js")
 
- function CreatePath(startingPoint, ctx, points, color) {
+ function CreatePath(startingPoint, ctx, color) {
    var backGroundColor = startingPoint.color;
    var startPoint = startingPoint;
    var currentPoint = startingPoint;
@@ -18,10 +18,10 @@
      x: startPoint.x,
      y: startingPoint.y,
      color: backGroundColor
-   }, points, ctx, color)
+   }, ctx, color)
  }
 
- function splitFillBool(firstpoint, points, ctx, color) {
+ function splitFillBool(firstpoint, ctx, color) {
 
    var bottomPointsBool = []
    var i = 0;
