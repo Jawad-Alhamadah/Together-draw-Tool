@@ -227,7 +227,7 @@ function DrawCanv() {
     socket.emit("MouseEvents", list);
   }
 }
-
+//
 function CreatePalletDivs() {
   PushColors(allColors)
   var colorpallentTemp = document.getElementById("ColorPallet")
