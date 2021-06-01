@@ -439,9 +439,9 @@ button#NameBtn {}
   padding: 10p;
   background-image: url("painting.png");
   background-size: 81%;
-  background-position-x: 37px;
+  background-position-x: 29px;
   background-blend-mode: soft-light;
-  background-position-y: 134px;
+  background-position-y: 137px;
   background-repeat: no-repeat;
 }
 

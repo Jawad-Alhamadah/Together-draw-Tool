@@ -110,7 +110,26 @@ function PushColors(allColors){
   allColors.push('#10D65B');
   allColors.push('#E6456C');
 }
+
+function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_2,BackgroundIcon_3,BackgroundIcon_4,BackgroundIcon_5,BackgroundIcon_6
+    ,SaveIcon_1,SaveIcon_2,SaveIcon_3,SaveIcon_4){
+    var IconRandomNum=Math.floor(Math.random() * (600 - 1 + 1) + 1)
+    if(IconRandomNum<100){$("#chatArea").css("background-image",`url(${BackgroundIcon_6})`)}else
+    if(IconRandomNum<200){$("#chatArea").css("background-image",`url(${BackgroundIcon_5})`)}else
+    if(IconRandomNum<300){$("#chatArea").css("background-image",`url(${BackgroundIcon_4})`)}else
+    if(IconRandomNum<400){$("#chatArea").css("background-image",`url(${BackgroundIcon_3})`)}else
+    if(IconRandomNum<500){$("#chatArea").css("background-image",`url(${BackgroundIcon_2})`)}
+    else{$("#chatArea").css("background-image",`url(${BackgroundIcon_1})`)}
+
+
+     IconRandomNum=Math.floor(Math.random() * (400 - 1 + 1) + 1)
+    if(IconRandomNum<100){$("#SaveBtn").attr("src",SaveIcon_1)}else
+    if(IconRandomNum<200){$("#SaveBtn").attr("src",SaveIcon_2)}else
+    if(IconRandomNum<300){$("#SaveBtn").attr("src",SaveIcon_3)}else
+    if(IconRandomNum<400){$("#SaveBtn").attr("src",SaveIcon_4)}
+   
+  }
 module.exports = {
 
-    UserNameAndCursorDivsSetup,PushColors
+    UserNameAndCursorDivsSetup,PushColors,RandomizeChatIcon
 }
