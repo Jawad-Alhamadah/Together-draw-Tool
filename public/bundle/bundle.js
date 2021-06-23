@@ -11074,257 +11074,395 @@ return jQuery;
 } );
 
 },{}],4:[function(require,module,exports){
- let Queue = require("./Queue.js");
+var {Tool}= require("./Tool")
+var $ = require("jquery");
+class Brush extends Tool{
+  constructor(iconSrc,iconDivId,isActive) {
+    super(iconSrc,iconDivId,isActive)
+  }
+  
+ 
+}
+module.exports = {
+  Brush
+}
+},{"./Tool":10,"jquery":3}],5:[function(require,module,exports){
+let Queue = require("../Queue.js")
+const {GetBoolIndex} = require("../PixelMath.js")
+const {setPixel,getColorOfPixel} = require("../PixelFunctions.js")
+const {Pixel} = require ("./Pixel.js")
+var {Tool}= require("./Tool")
 
- const {
-   GetBoolIndex
- } = require("./PixelMath.js");
- const {
-   getPixel,
-   setPixel,
-   rgbaToText
- } = require("./PixelFunctions.js")
+class Bucket extends Tool{
+  constructor(iconSrc,iconDivId,isActive) {
+  super(iconSrc,iconDivId,isActive)
 
- function CreatePath(startingPoint, ctx, color) {
-   var backGroundColor = startingPoint.color;
-   var startPoint = startingPoint;
-   var currentPoint = startingPoint;
-   imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
-   splitFillBool({
-     x: startPoint.x,
+  }
+  useBucket(fillColor,socket,isNamePicked,DrawingEnviroment,ctx) {
+    //Setup variables for eaiser to read If statments.
+    var mouse = DrawingEnviroment.mouse
+    var width=DrawingEnviroment.canvWidth
+    var height=DrawingEnviroment.canvHeight
+    var isInsideWidth = mouse.x < width && mouse.x>0
+    var isInsideHeight = mouse.y < height && mouse.y>0
+    var isInsideDrawingArea= isInsideWidth && isInsideHeight
+    if (isInsideDrawingArea && isNamePicked) {
+       var tempColor = ctx.getImageData(mouse.x - mouse.CorrectionX, mouse.y - mouse.CorrectionY, 1, 1).data
+       this.FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket,ctx)
+    }
+}
+
+FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket,ctx) {
+   this.FillArea({
+        x: mouse.x - mouse.CorrectionX,
+        y: mouse.y - mouse.CorrectionY,
+        color: tempColor
+    }, ctx, fillColor)
+    socket.emit('fill', {
+        x: mouse.x - mouse.CorrectionX,
+        y: mouse.y - mouse.CorrectionY,
+        color: tempColor,
+        hostColor: fillColor
+    })
+}
+ CreatePath(startingPoint, ctx, fillColor) {
+   
+   this.FillArea({
+     x: startingPoint.x,
      y: startingPoint.y,
-     color: backGroundColor
-   }, ctx, color)
+     color: startingPoint.color
+   }, ctx, fillColor,imageData)
  }
-
- function splitFillBool(firstpoint, ctx, color) {
-
-   var bottomPointsBool = []
-   var i = 0;
-   var bottomPoints = new Queue();
-   bottomPoints.enqueue({
-     x: firstpoint.x,
-     y: firstpoint.y,
-     color: firstpoint.color
-   })
-   bottomPointsBool[GetBoolIndex(firstpoint.x, firstpoint.y, ctx.canvas.width)] = true;
-   setPixel(imageData, firstpoint.x, firstpoint.y, color[0], color[1], color[2], color[3])
-   var bgColor = firstpoint.color;
-   var backGroundColor = firstpoint.color;
-   bgColor = "rgba(" + backGroundColor[0] + ',' + backGroundColor[1] + ',' + backGroundColor[2] + ',' + backGroundColor[3] + ')';
-   var topBool = true;
-   var bottomBool = true;
-   var leftBool = true;
-   var rightBool = true;
-   var topLeftBool = true;
-   var bottomLeftBool = true;
-   var bottomRightBool = true;
-   var topRightBool = true;
-   var tlData,
-     topLeft,
-     lData,
-     left,
-     blData,
-     bottomLeft,
-     bData,
-     bottom,
-     brData,
-     bottomRight,
-     rData,
-     right,
-     trData,
-     topRight,
-     tData,
-     pixel, r, g, b, a
-   top;
-   r = color[0];
-   g = color[1]
-   b = color[2]
-   a = color[3]
-   i = 0
-   console.time("time");
-   while (bottomPoints.getLength() > 0) {
-     topBool = false;
-     bottomBool = false;
-     leftBool = false;
-     rightBool = false;
-     topLeftBool = false;
-     bottomLeftBool = false;
-     bottomRightBool = false;
-     topRightBool = false;
-
-     pixel = bottomPoints.dequeue();
-
-     setPixel(imageData, pixel.x, pixel.y, r, g, b, a)
-     // FillImage[i]={x:pixel.x,y:pixel.y};
-     i++;
-     if (!bottomPointsBool[GetBoolIndex(pixel.x - 1, pixel.y, ctx.canvas.width)]) {
-       lData = getPixel(imageData, pixel.x - 1, pixel.y)
-       left = 'rgba(' +
-         lData[0] + ',' +
-         lData[1] + ',' +
-         lData[2] + ',' +
-         lData[3] + ')';
-       leftBool = true;
+ FillArea(firstpoint, ctx, fillColor) {
+   var imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
+   var isPixelCheckedList = []
+   var pointsQueue = new Queue()
+   var backGroundColor = firstpoint.color
+   var pixel
+   var r
+   var g
+   var b
+   var a
+   var width=ctx.canvas.width
+   r = fillColor[0]
+   g = fillColor[1]
+   b = fillColor[2]
+   a = fillColor[3]
+   backGroundColor = `rgba(${backGroundColor[0]},${backGroundColor[1]},${backGroundColor[2]},${backGroundColor[3]})`
+   pointsQueue.enqueue(new Pixel(firstpoint.x,firstpoint.y,width))
+   
+   while (pointsQueue.getLength() > 0) {
+     pixel = pointsQueue.dequeue(isPixelCheckedList)
+     setPixel(imageData, pixel.x, pixel.y, r, g, b, a)  
+     if (!pixel.isLeftPointProcessed(isPixelCheckedList)) {
+       var leftColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y)
+       if (backGroundColor === leftColor) {
+           isPixelCheckedList[pixel.leftIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y,width))
+         }
+     }
+     if (!pixel.isBottomLeftPointProcessed(isPixelCheckedList)) {
+       var bottomLeftColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y + 1)
+       if (backGroundColor === bottomLeftColor ) {
+           isPixelCheckedList[pixel.bottomLeftIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y + 1,width))
+       }
+     }  
+     if (!pixel.isTopPointProcessed(isPixelCheckedList)) {
+       var topColor = getColorOfPixel(imageData, pixel.x, pixel.y - 1)
+       if (backGroundColor === topColor ) {
+           isPixelCheckedList[pixel.topIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x, pixel.y - 1,width))
+         }
+     }
+     if (!pixel.isTopRightPointProcessed(isPixelCheckedList)) {
+       var topRightColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y - 1)
+       if (backGroundColor === topRightColor ) {
+           isPixelCheckedList[pixel.topRightIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x + 1, pixel.y - 1,width))
+         }
+     }
+     if (!pixel.isTopLeftPointProcessed(isPixelCheckedList)) {
+       var topLeftColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y - 1)
+       if (backGroundColor === topLeftColor ) {
+           isPixelCheckedList[pixel.topLeftIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y - 1,width))
+         }
+     }
+     if (!pixel.isBottomPointProcessed(isPixelCheckedList)) {
+       var bottomColor = getColorOfPixel(imageData, pixel.x, pixel.y + 1)
+       if (backGroundColor === bottomColor ) {
+           isPixelCheckedList[pixel.bottomIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x, pixel.y + 1,width))
+           }
+     }
+     if (!pixel.isBottomRightPointProcessed(isPixelCheckedList)) {
+       var bottomRightColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y + 1)
+       if (backGroundColor === bottomRightColor ) {
+           isPixelCheckedList[pixel.bottomRightIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x + 1,pixel.y + 1,width))
+         }
      }
 
-
-     if (!bottomPointsBool[GetBoolIndex(pixel.x - 1, pixel.y + 1, ctx.canvas.width)]) {
-       blData = getPixel(imageData, pixel.x - 1, pixel.y + 1)
-       bottomLeft = 'rgba(' +
-         blData[0] + ',' +
-         blData[1] + ',' +
-         blData[2] + ',' +
-         blData[3] + ')';
-       bottomLeftBool = true;
-     }
-
-     if (!bottomPointsBool[GetBoolIndex(pixel.x, pixel.y - 1, ctx.canvas.width)]) {
-       tData = getPixel(imageData, pixel.x, pixel.y - 1)
-       top = 'rgba(' +
-         tData[0] + ',' +
-         tData[1] + ',' +
-         tData[2] + ',' +
-         tData[3] + ')';
-       topBool = true;
-     }
-
-     if (!bottomPointsBool[GetBoolIndex(pixel.x + 1, pixel.y - 1, ctx.canvas.width)]) {
-       trData = getPixel(imageData, pixel.x + 1, pixel.y - 1)
-       topRight = 'rgba(' +
-         trData[0] + ',' +
-         trData[1] + ',' +
-         trData[2] + ',' +
-         trData[3] + ')';
-       topRightBool = true;
-     }
-
-     if (!bottomPointsBool[GetBoolIndex(pixel.x - 1, pixel.y - 1, ctx.canvas.width)]) {
-       tlData = getPixel(imageData, pixel.x - 1, pixel.y - 1)
-       topLeft = 'rgba(' +
-         tlData[0] + ',' +
-         tlData[1] + ',' +
-         tlData[2] + ',' +
-         tlData[3] + ')';
-       topLeftBool = true;
-     }
-
-     if (!bottomPointsBool[GetBoolIndex(pixel.x, pixel.y + 1, ctx.canvas.width)]) {
-       bData = getPixel(imageData, pixel.x, pixel.y + 1)
-       bottom = 'rgba(' +
-         bData[0] + ',' +
-         bData[1] + ',' +
-         bData[2] + ',' +
-         bData[3] + ')';
-       bottomBool = true;
-     }
-
-     if (!bottomPointsBool[GetBoolIndex(pixel.x + 1, pixel.y + 1, ctx.canvas.width)]) {
-       brData = getPixel(imageData, pixel.x + 1, pixel.y + 1)
-       bottomRight = 'rgba(' +
-         brData[0] + ',' +
-         brData[1] + ',' +
-         brData[2] + ',' +
-         brData[3] + ')';
-       bottomRightBool = true;
-     }
-
-     if (!bottomPointsBool[GetBoolIndex(pixel.x + 1, pixel.y, ctx.canvas.width)]) {
-       rData = getPixel(imageData, pixel.x + 1, pixel.y)
-       right = 'rgba(' +
-         rData[0] + ',' +
-         rData[1] + ',' +
-         rData[2] + ',' +
-         rData[3] + ')';
-       rightBool = true;
-     }
-
-     if (bgColor === topLeft && topLeftBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x - 1, pixel.y - 1, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x - 1,
-         y: pixel.y - 1,
-         color: bgColor
-       })
-     }
-     if (bgColor === bottomRight && bottomRightBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x - 1, pixel.y - 1, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x + 1,
-         y: pixel.y + 1,
-         color: bgColor
-       })
-     }
-     if (bgColor === bottomLeft && bottomLeftBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x - 1, pixel.y + 1, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x - 1,
-         y: pixel.y + 1,
-         color: bgColor
-       })
-     }
-     if (bgColor === topRight && topRightBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x + 1, pixel.y - 1, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x + 1,
-         y: pixel.y - 1,
-         color: bgColor
-       })
-     }
-     if (bgColor === bottom && bottomBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x, pixel.y + 1, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x,
-         y: pixel.y + 1,
-         color: bgColor
-       })
-     }
-     if (bgColor === left && leftBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x - 1, pixel.y, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x - 1,
-         y: pixel.y,
-         color: bgColor
-       })
-     }
-     if (bgColor === right && rightBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x + 1, pixel.y, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x + 1,
-         y: pixel.y,
-         color: bgColor
-       })
-     }
-     if (bgColor === top && topBool === true) {
-       bottomPointsBool[GetBoolIndex(pixel.x, pixel.y - 1, ctx.canvas.width)] = true;
-       bottomPoints.enqueue({
-         x: pixel.x,
-         y: pixel.y - 1,
-         color: bgColor
-       })
+     if (!pixel.isRightPointProcessed(isPixelCheckedList)) {
+       var rightColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y)
+       if (backGroundColor === rightColor ) {
+           isPixelCheckedList[pixel.rightIndex] = true
+           pointsQueue.enqueue(new Pixel(pixel.x + 1, pixel.y,width))
+       }
      }
    }
-   console.timeEnd('time')
-   ctx.putImageData(imageData, 0, 0);
-
+   ctx.putImageData(imageData, 0, 0)
  }
 
+}
+module.exports = {
+  Bucket
+}
+},{"../PixelFunctions.js":14,"../PixelMath.js":15,"../Queue.js":16,"./Pixel.js":9,"./Tool":10}],6:[function(require,module,exports){
+var $ = require("jquery")
+var {Tool}= require("./Tool")
+class ColorPicker extends Tool {
+  constructor(iconSrc,iconDivId,isActive) {
+    super(iconSrc,iconDivId,isActive)
+  
+    }
+}
+module.exports = {
+  ColorPicker
+}
+},{"./Tool":10,"jquery":3}],7:[function(require,module,exports){
+var {Tool}= require("./Tool")
+var $ = require("jquery");
+const {hexToRGB} = require("../PixelFunctions.js")
+class Eraser extends Tool{
+  constructor(iconSrc,iconDivId,isActive) {
+    super(iconSrc,iconDivId,isActive)
+  }
+  activationSetUp(event,DrawingEnviroment){
+    var white=hexToRGB("#ffffff", 255)
+    DrawingEnviroment.savedColor=DrawingEnviroment.color
+    DrawingEnviroment.setBrushColor(white)
+    $("#Image_2").attr("src", this.cursorIcon)
+    $("#toolsDiv ").children().css("opacity", "100%")
+    $(event.target).css("opacity", "30%")
+  }
+}
+module.exports = {
+  Eraser
+}
+},{"../PixelFunctions.js":14,"./Tool":10,"jquery":3}],8:[function(require,module,exports){
+class Mouse {
+    constructor(mouseX,mouseY,CorrectionX,CorrectionY) {
+        this.x=mouseX;
+        this.y=mouseY;
+        this.previousX=mouseX;
+        this.previousX=mouseY;
+        this.isDown=false;
+        this.CorrectionX=CorrectionX
+        this.CorrectionY=CorrectionY
+          }
+    decativateOtherPaintingTools() {  }
+    method_2() {  }
+    method_3() {  }
+  }
+
+  module.exports = {
+    Mouse
+  }
+},{}],9:[function(require,module,exports){
+const {
+    GetBoolIndex
+} = require("../PixelMath.js");
+var $ = require("jquery");
+class Pixel {
+    constructor(x, y,width) {
+        this.x = x
+        this.y = y
+        this.leftIndex = GetBoolIndex(x - 1, y, width)
+        this.bottomLeftIndex = GetBoolIndex(x - 1, y + 1, width)
+        this.topIndex = GetBoolIndex(x, y - 1, width)
+        this.topRightIndex = GetBoolIndex(x + 1, y - 1, width)
+        this.topLeftIndex = GetBoolIndex(x - 1, y - 1, width)
+        this.bottomIndex = GetBoolIndex(x, y + 1, width)
+        this.bottomRightIndex = GetBoolIndex(x + 1, y + 1, width)
+        this.rightIndex = GetBoolIndex(x + 1, y, width)
+        
+    }
+    isLeftPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.leftIndex]
+    isBottomLeftPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.bottomLeftIndex]
+    isTopPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.topIndex]
+    isTopRightPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.topRightIndex]
+    isTopLeftPointProcessed= (isPixelCheckedList)=> isPixelCheckedList[this.topLeftIndex]
+    isBottomPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.bottomIndex]
+    isBottomRightPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.bottomRightIndex]
+    isRightPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.rightIndex]
+}
+module.exports = {
+    Pixel
+}
+},{"../PixelMath.js":15,"jquery":3}],10:[function(require,module,exports){
+var $ = require("jquery");
+
+class Tool {
+  constructor(iconSrc,iconDivId,isActive,cursorIcon) {
+    this.isActive = isActive
+    this.iconSrc=iconSrc
+    this.iconDivId=iconDivId
+    this.cursorIcon=cursorIcon
+    this.setIcon()
+  }
+  activationSetUp(event,DrawingEnviroment){
+    DrawingEnviroment.setBrushColor(DrawingEnviroment.savedColor)
+    $("#Image_2").attr("src", this.cursorIcon)
+    $("#toolsDiv ").children().css("opacity", "100%")
+    $(event.target).css("opacity", "30%")
+  }
+    
+  setIcon = ()=>$("#"+this.iconDivId).css("background-image", `url(${this.iconSrc})`)
+}
+module.exports = {
+    Tool
+}
+},{"jquery":3}],11:[function(require,module,exports){
+
+const {Bucket} = require("./Bucket")
+const {Eraser} = require("./Eraser")
+const {ColorPicker} = require("./ColorPicker")
+const {Brush} = require("./Brush")
+  
+class Tools {
+    constructor() {
+        this.brush=new Brush('BrushTool.png','BrushTool',true,"")
+        this.bucket=new Bucket('paint-bucket-4.png','BucketTool',false,"paint-bucket-4.png")
+        this.eraser=new Eraser('eraser.png','EraserTool',false,"")
+        this.colorPicker=new ColorPicker('color-picker.png','ColorPickerTool',false,"dropper.png")
+          }
+    activateBrush(event,DrawingEnviroment) {
+        this.brush.isActive       = true
+        this.eraser.isActive      = false
+        this.colorPicker.isActive = false
+        this.bucket.isActive      = false
+        this.brush.activationSetUp(event,DrawingEnviroment)
+    }
+    activateEraser(event,DrawingEnviroment) {
+        this.eraser.isActive      = true 
+        this.brush.isActive       = false
+        this.colorPicker.isActive = false
+        this.bucket.isActive      = false
+        this.eraser.activationSetUp(event,DrawingEnviroment)
+       
+    }
+    activateColorPicker(event,DrawingEnviroment) {
+        this.colorPicker.isActive = true
+        this.brush.isActive       = false
+        this.eraser.isActive      = false
+        this.bucket.isActive      = false
+        this.colorPicker.activationSetUp(event,DrawingEnviroment)
+    }
+    activateBucket(event,DrawingEnviroment) {
+        this.bucket.isActive      = true
+        this.brush.isActive       = false
+        this.eraser.isActive      = false
+        this.colorPicker.isActive = false  
+        this.bucket.activationSetUp(event,DrawingEnviroment)
+    }
+     
+  }
+  module.exports = {
+    Tools
+  }
+},{"./Brush":4,"./Bucket":5,"./ColorPicker":6,"./Eraser":7}],12:[function(require,module,exports){
+ const {hexToRGB} = require("./PixelFunctions")
+ let {Mouse} = require("./Classes/Mouse")
+ let {Tools} = require("./Classes/Tools")
+
+ var $ = require("jquery")
+ class DrawingEnviroment {
+     constructor(canvWidth, canvHeight, mouseX, mouseY, userName, color,correctionX,correctionY) {
+         this.mouse = new Mouse(mouseX, mouseY,correctionX,correctionY)
+         this.tools = new Tools()
+         this.isNamePicked = false
+         this.canvWidth = canvWidth
+         this.canvHeight = canvHeight
+         this.userName = userName
+         this.color = hexToRGB(color, 255)
+         this.savedColor=hexToRGB(color, 255)
+         this.brushSize = 2
+         this.palletColorsList=[]
+         this.brushSizeUpperLimit=6
+         this.brushSizeLowerLimit=2
+         this.chatLimit=20
+         this.chatCounter=0
+         
+     }
+
+     fillWithWhite(ctx) {
+         ctx.canvas.width = 1094
+         ctx.canvas.height = 500
+         ctx.strokeRect(20, 20, 1040, 445)
+         ctx.fillStyle = "white"
+         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+         ctx.fillStyle = "black"
+     }
+     CreatePalletDivs() {
+         this.PushColors(this.palletColorsList)
+         for (var i = 0; i < this.palletColorsList.length; i++) this.createIndividualColorPalletDiv(this.palletColorsList,i) 
+     }
+
+    PushColors(col){
+        col.push('#000000');col.push('#FFFFFF');col.push('#999900');col.push('#4C9900');col.push('#004C99');
+        col.push('#009900');col.push('#00994C');col.push('#009999');col.push('#80FF00');col.push('#99004C')
+        col.push('#000099');col.push('#4C0099');col.push('#990099');col.push('#0080FF');col.push('#58906F');
+        col.push('#FF0000');col.push('#FF8000');col.push('#FFFF00');col.push('#FFFF99');col.push('#99FFFF');
+        col.push('#00FF00');col.push('#00FF80');col.push('#00FFFF');col.push('#FF99FF');col.push('#1B46D6');
+        col.push('#0000FF');col.push('#7F00FF');col.push('#FF00FF');col.push('#AF21ED');col.push('#D64A2D');
+        col.push('#FF007F');col.push('#FF9999');col.push('#FFCC99');col.push('#F046D3');col.push('#F07D22');
+        col.push('#CCFF99');col.push('#99FF99');col.push('#99FFCC');col.push('#E66250');col.push('#E6C412');
+        col.push('#99CCFF');col.push('#9999FF');col.push('#CC99FF');col.push('#52E629');col.push('#10D65B');
+        col.push('#FF99CC');col.push('#663CE6');col.push('#1413ED');col.push('#FD99FD');col.push('#7BD60B');
+        col.push('#2986F0');col.push('#12A6E3');col.push('#7729D6');col.push('#E6BE35');col.push('#9F475F');
+        col.push('#DC0099');col.push('#DC49E6');col.push('#C72DE3');col.push('#D6332D');col.push('#D62F3B');
+        col.push('#D63574');col.push('#D62F8B');col.push('#1AF045');col.push('#BFD60B');col.push('#D69815');
+        col.push('#E612C3');col.push('#F03C7D');col.push('#E64B07');col.push('#E6456C');col.push('#0EE612');
+        col.push('#E67D4E');col.push('#F0E216');col.push('#D68715');
+      }
+    
+    createIndividualColorPalletDiv(palletColorsList,i) {
+        var colorpallentTemp = document.getElementById("ColorPallet")
+        let tempPallet = document.createElement("div")
+        colorpallentTemp.appendChild(tempPallet)
+        tempPallet.id = palletColorsList[i].substring(1)
+        tempPallet.style.backgroundColor = "#" + tempPallet.id
+        $("#" + tempPallet.id).click((e) => this.setBrushColor(hexToRGB("#" + e.target.id, 255)))
+    }
+    setBrushColor = (desiredColor)=> this.color= desiredColor
+    
+ }
  module.exports = {
-   splitFillBool,
-   CreatePath
+     DrawingEnviroment
  }
-},{"./PixelFunctions.js":5,"./PixelMath.js":6,"./Queue.js":7}],5:[function(require,module,exports){
+},{"./Classes/Mouse":8,"./Classes/Tools":11,"./PixelFunctions":14,"jquery":3}],13:[function(require,module,exports){
+
+
+
+
+ 
+ module.exports = {
+
+ }
+},{}],14:[function(require,module,exports){
 (function (process){(function (){
 function setPixel(imageData, x, y, r, g, b, a) {
-  index = (x + y * imageData.width) * 4;
-  imageData.data[index + 0] = r;
-  imageData.data[index + 1] = g;
-  imageData.data[index + 2] = b;
-  imageData.data[index + 3] = a;
+  index = (x + y * imageData.width) * 4
+  imageData.data[index + 0] = r
+  imageData.data[index + 1] = g
+  imageData.data[index + 2] = b
+  imageData.data[index + 3] = a
 }
 
 function getPixel(imageData, x, y) {
-  index = (x + y * imageData.width) * 4;
+  index = (x + y * imageData.width) * 4
   return [imageData.data[index + 0], imageData.data[index + 1], imageData.data[index + 2], imageData.data[index + 3]]
 }
 
@@ -11336,13 +11474,18 @@ function rgbaToText(colorRGBA) {
 function hexToRGB(hex, alpha) {
   var r = parseInt(hex.slice(1, 3), 16),
     g = parseInt(hex.slice(3, 5), 16),
-    b = parseInt(hex.slice(5, 7), 16);
+    b = parseInt(hex.slice(5, 7), 16)
 
   if (alpha) {
     return [r, g, b, alpha]
   } else {
-    return "rgb(" + r + ", " + g + ", " + b + ")";
+    return "rgb(" + r + ", " + g + ", " + b + ")"
   }
+}
+
+function getColorOfPixel(imageData,x,y){
+  var rgba= getPixel(imageData,x,y)
+  return `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
 }
 
 function rgbaToHex(rgba) {
@@ -11350,26 +11493,26 @@ function rgbaToHex(rgba) {
     r = parseInt(trim(inParts[0].substring(1)), 10),
     g = parseInt(trim(inParts[1]), 10),
     b = parseInt(trim(inParts[2]), 10),
-    a = parseFloat(trim(inParts[3].substring(0, inParts[3].length - 1))).toFixed(2);
+    a = parseFloat(trim(inParts[3].substring(0, inParts[3].length - 1))).toFixed(2)
   var outParts = [
     r.toString(16),
     g.toString(16),
     b.toString(16),
     Math.round(a * 255).toString(16).substring(0, 2)
-  ];
+  ]
 
   // Pad single-digit output values
   outParts.forEach(function (part, i) {
     if (part.length === 1) {
-      outParts[i] = '0' + part;
+      outParts[i] = '0' + part
     }
   })
 
-  return ('#' + outParts.join(''));
+  return ('#' + outParts.join(''))
 }
 
 if (process.argv.length >= 3) {
-  console.log(rgbaToHex(process.argv[2]));
+  console.log(rgbaToHex(process.argv[2]))
 } else {
 
 }
@@ -11380,40 +11523,41 @@ module.exports = {
   rgbaToText,
   hexToRGB,
   setPixel,
-  rgbaToHex
+  rgbaToHex,
+  getColorOfPixel
 }
 }).call(this)}).call(this,require('_process'))
-},{"_process":1}],6:[function(require,module,exports){
+},{"_process":1}],15:[function(require,module,exports){
 function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
-    var coordinatesArray = new Array();
+    var coordinatesArray = new Array()
     // Translate coordinates
-    var x1 = startCoordinates.left;
-    var y1 = startCoordinates.top;
-    var x2 = endCoordinates.left;
-    var y2 = endCoordinates.top;
+    var x1 = startCoordinates.left
+    var y1 = startCoordinates.top
+    var x2 = endCoordinates.left
+    var y2 = endCoordinates.top
     // Define differences and error check
-    var dx = Math.abs(x2 - x1);
-    var dy = Math.abs(y2 - y1);
-    var sx = (x1 < x2) ? 1 : -1;
-    var sy = (y1 < y2) ? 1 : -1;
-    var err = dx - dy;
+    var dx = Math.abs(x2 - x1)
+    var dy = Math.abs(y2 - y1)
+    var sx = (x1 < x2) ? 1 : -1
+    var sy = (y1 < y2) ? 1 : -1
+    var err = dx - dy
     // Set first coordinates
     coordinatesArray.push({
         x: x1,
         y: y1,
         color: color,
         BrushSize:BrushSize
-    });
+    })
     // Main loop
     while (!((x1 == x2) && (y1 == y2))) {
-        var e2 = err << 1;
+        var e2 = err << 1
         if (e2 > -dy) {
-            err -= dy;
-            x1 += sx;
+            err -= dy
+            x1 += sx
         }
         if (e2 < dx) {
-            err += dx;
-            y1 += sy;
+            err += dx
+            y1 += sy
         }
         // Set coordinates
         coordinatesArray.push({
@@ -11421,10 +11565,10 @@ function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
             y: y1,
             color: color,
             BrushSize:BrushSize
-        });
+        })
     }
     // Return the result
-    return coordinatesArray;
+    return coordinatesArray
 }
 
 function GetBoolIndex(x, y, canvWidth) {
@@ -11433,8 +11577,8 @@ function GetBoolIndex(x, y, canvWidth) {
 }
 
 function GetBoolXY(index) {
-    var y = index / canvWidth;
-    var x = index % canvWidth;
+    var y = index / canvWidth
+    var x = index % canvWidth
 
     return {
         x: x,
@@ -11448,32 +11592,40 @@ module.exports = {
     GetBoolXY,
     calcStraightLine
 }
-},{}],7:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 ////////////
 function Queue(){
 
       var a=[],b=0;
-      this.getLength=function(){return a.length-b};
-      this.isEmpty=function(){return 0==a.length};
-      this.enqueue=function(b){a.push(b)};
+      this.getLength=function(){return a.length-b}
+      this.isEmpty=function(){return 0==a.length}
+      this.enqueue=function(b){a.push(b)}
       this.dequeue=function(){if(0!=a.length){
-        var c=a[b];2*++b>=a.length&&(a=a.slice(b),b=0);
+        var c=a[b];2*++b>=a.length&&(a=a.slice(b),b=0)
         return c
         }
-      };
+      }
       this.peek=function(){return 0<a.length?a[b]:void 0}
-  };
-module.exports=Queue;
-},{}],8:[function(require,module,exports){
+  }
+module.exports=Queue
+},{}],17:[function(require,module,exports){
 
-var $ = require("jquery");
+const {Socket_DrawEvents_Recieved,
+       Socket_MouseEvents_Recieved,
+       Socket_NewUser_Recieved,
+       Socket_HandleUserMovement_Recieved,
+       Socket_FillEvent_Recieved,
+       Socket_NameChangeEvent_Recieved,
+       Socket_CommentEvent_Recieved,
+      }=require("./SocketOnFunctions.js")
+var $ = require("jquery")
 function UserNameAndCursorDivsSetup(socket,Username) {
 
-    var TempSpan = document.createElement("span");
+    var TempSpan = document.createElement("span")
     var TempCursor = document.createElement("div")
 
-    TempSpan.id = socket.id + "-span";
-    TempCursor.id = socket.id + "-cursor";
+    TempSpan.id = socket.id + "-span"
+    TempCursor.id = socket.id + "-cursor"
     document.getElementById("container").appendChild(TempSpan)
     document.getElementById("container").appendChild(TempCursor)
     var tempcursorImage = document.createElement("img")
@@ -11481,159 +11633,113 @@ function UserNameAndCursorDivsSetup(socket,Username) {
     TempCursor.appendChild(tempcursorImage)
     TempCursor.appendChild(tempcursorImage_2)
     tempcursorImage.src = "Cursor.png"
-    tempcursorImage.id = "Image_1";
-    tempcursorImage_2.id = "Image_2";
+    tempcursorImage.id = "Image_1"
+    tempcursorImage_2.id = "Image_2"
     document.getElementById(socket.id + "-span").innerHTML = Username
     document.getElementById("LoadingSpan").innerText = "Pick A Name:"
     $("#NameBtn").css("pointer-events", "auto")
     $("#NameBtn").css("filter", "brightness(100%)")
     document.querySelector("#NameBox").addEventListener("keydown", event => {
-        if (event.key !== "Enter") return;
-        document.querySelector("#NameBtn").click();
-        event.preventDefault();
-    });
-}
-function PushColors(allColors){
-  allColors.push('#000000');
-  allColors.push('#FFFFFF');
-  allColors.push('#999900');
-  allColors.push('#4C9900');
-  allColors.push('#009900');
-  allColors.push('#00994C');
-  allColors.push('#009999');
-  allColors.push('#004C99');
-  allColors.push('#000099');
-  allColors.push('#4C0099');
-  allColors.push('#990099');
-  allColors.push('#99004C')
-
-  allColors.push('#FF0000');
-  allColors.push('#FF8000');
-  allColors.push('#FFFF00');
-  allColors.push('#80FF00');
-  allColors.push('#00FF00');
-  allColors.push('#00FF80');
-  allColors.push('#00FFFF');
-  allColors.push('#0080FF');
-  allColors.push('#0000FF');
-  allColors.push('#7F00FF');
-  allColors.push('#FF00FF');
-  allColors.push('#58906F');
-  allColors.push('#FF007F');
-  //
-
-  allColors.push('#FF9999');
-  allColors.push('#FFCC99');
-  allColors.push('#FFFF99');
-  allColors.push('#CCFF99');
-  allColors.push('#99FF99');
-  allColors.push('#99FFCC');
-  allColors.push('#99FFFF');
-  allColors.push('#99CCFF');
-  allColors.push('#9999FF');
-  allColors.push('#CC99FF');
-  allColors.push('#FF99FF');
-  allColors.push('#FF99CC');
-  ////////////////////////////////////////
-  allColors.push('#663CE6');
-  allColors.push('#1413ED');
-  allColors.push('#1B46D6');
-  allColors.push('#2986F0');
-  allColors.push('#12A6E3'); /////
-  allColors.push('#2027E3');
-  allColors.push('#5D37F0');
-  allColors.push('#7729D6');
-  allColors.push('#AF21ED');
-  allColors.push('#DC0099');
-  allColors.push('#DC49E6'); ///////////////
-  allColors.push('#C72DE3')
-
-  allColors.push('#F046D3');
-  allColors.push('#D63574');
-  allColors.push('#D62F8B');
-  allColors.push('#D62F3B');
-  allColors.push('#E66250');
-  allColors.push('#E612C3');
-  allColors.push('#F03C7D');
-  allColors.push('#D6332D');
-  allColors.push('#D64A2D');
-  allColors.push('#E67D4E');
-  allColors.push('#E64B07');
-  allColors.push('#9F475F');
-  allColors.push('#F07D22');
-  //
-
-  allColors.push('#D68715');
-  allColors.push('#D69815');
-  allColors.push('#E6BE35');
-  allColors.push('#E6C412');
-  allColors.push('#F0E216');
-  allColors.push('#BFD60B');
-  allColors.push('#7BD60B');
-  allColors.push('#52E629');
-  allColors.push('#0EE612');
-  allColors.push('#1AF045');
-  allColors.push('#FD99FD');
-  allColors.push('#10D65B');
-  allColors.push('#E6456C');
+        if (event.key !== "Enter") return
+        document.querySelector("#NameBtn").click()
+        event.preventDefault()
+    })
 }
 
-function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_2,BackgroundIcon_3,BackgroundIcon_4,BackgroundIcon_5,BackgroundIcon_6
-    ,SaveIcon_1,SaveIcon_2,SaveIcon_3,SaveIcon_4){
-    var IconRandomNum=Math.floor(Math.random() * (600 - 1 + 1) + 1)
-    if(IconRandomNum<100){$("#chatArea").css("background-image",`url(${BackgroundIcon_6})`)}else
-    if(IconRandomNum<200){$("#chatArea").css("background-image",`url(${BackgroundIcon_5})`)}else
-    if(IconRandomNum<300){$("#chatArea").css("background-image",`url(${BackgroundIcon_4})`)}else
-    if(IconRandomNum<400){$("#chatArea").css("background-image",`url(${BackgroundIcon_3})`)}else
-    if(IconRandomNum<500){$("#chatArea").css("background-image",`url(${BackgroundIcon_2})`)}
-    else{$("#chatArea").css("background-image",`url(${BackgroundIcon_1})`)}
-
-
-     IconRandomNum=Math.floor(Math.random() * (400 - 1 + 1) + 1)
-    if(IconRandomNum<100){$("#SaveBtn").attr("src",SaveIcon_1)}else
-    if(IconRandomNum<200){$("#SaveBtn").attr("src",SaveIcon_2)}else
-    if(IconRandomNum<300){$("#SaveBtn").attr("src",SaveIcon_3)}else
-    if(IconRandomNum<400){$("#SaveBtn").attr("src",SaveIcon_4)}
-   
+function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
+    var IconRandomNum=Math.floor(Math.random() * (200 - 1 + 1) + 1)
+    if(IconRandomNum<100){$("#chatArea").css("background-image",`url(${BackgroundIcon_1})`)}else
+    if(IconRandomNum<200){$("#chatArea").css("background-image",`url(${BackgroundIcon_3})`)}
   }
+  function setUpInitialEnviroment(ctx,socket,color,userName,DrawingEnviroment) {
+   
+    DrawingEnviroment.fillWithWhite(ctx)
+    DrawingEnviroment.CreatePalletDivs()
+    addClickEvents(DrawingEnviroment)
+    UserNameAndCursorDivsSetup(socket, userName)
+    Socket_DrawEvents_Recieved(ctx, color, socket,DrawingEnviroment)
+    Socket_MouseEvents_Recieved(ctx, socket)
+    Socket_HandleUserMovement_Recieved(socket)
+    Socket_NewUser_Recieved(socket)
+    Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment)
+    Socket_NameChangeEvent_Recieved(socket)
+    Socket_CommentEvent_Recieved(socket)
+  }
+
+  function addClickEvents(DrawingEnviroment) {
+    $("#SaveBtn").click((event) => document.getElementById("Canvas").toBlob(function (blob) {
+      saveAs(blob, "pretty image.png")
+    }))
+    $("#BrushSizeUP").click((event) => {
+      if (DrawingEnviroment.brushSize < DrawingEnviroment.brushSizeUpperLimit)
+        DrawingEnviroment.brushSize++
+    })
+    $("#BrushSizeDown").click((event) => {
+      if (DrawingEnviroment.brushSize > DrawingEnviroment.brushSizeLowerLimit)
+        DrawingEnviroment.brushSize--
+    })
+    $("#EraserTool").click((event) => {
+      if (!DrawingEnviroment.tools.eraser.isActive) {
+        DrawingEnviroment.tools.activateEraser(event, DrawingEnviroment)
+      }
+  
+    })
+    $("#BrushTool").click((event) => {
+      if (!DrawingEnviroment.tools.brush.isActive) {
+        DrawingEnviroment.tools.activateBrush(event, DrawingEnviroment)
+      }
+    })
+  
+    $("#ColorPickerTool").click((event) => {
+      if (!DrawingEnviroment.tools.colorPicker.isActive) {
+        DrawingEnviroment.tools.activateColorPicker(event, DrawingEnviroment)
+      }
+    })
+  
+    $("#BucketTool").click((event) => {
+      if (!DrawingEnviroment.tools.bucket.isActive) {
+        DrawingEnviroment.tools.activateBucket(event, DrawingEnviroment)
+      }
+    })
+  }
+  
+
+ 
+
 module.exports = {
 
-    UserNameAndCursorDivsSetup,PushColors,RandomizeChatIcon
+    UserNameAndCursorDivsSetup,RandomizeChatIcon,setUpInitialEnviroment,addClickEvents
 }
-},{"jquery":3}],9:[function(require,module,exports){
+},{"./SocketOnFunctions.js":18,"jquery":3}],18:[function(require,module,exports){
 const {rgbaToText} = require("./PixelFunctions.js")
 const {CreatePath} = require("./FillToolFunctions.js")
-var $ = require("jquery");
-var chatCounter=0;
-var chatLimit=20;
-function Socket_DrawEvents_Recieved(ctx,color,socket){
+var $ = require("jquery")
+
+function Socket_DrawEvents_Recieved(ctx,color,socket,DrawingEnviroment){
 
     socket.on('draw', function (data) {
-        data.data.forEach((item, i) => {
-      
-          if (item.command === "DrawMouseEvent") {
-            ctx.fillStyle = rgbaToText(item.data.color);
-            ctx.fillRect(item.data.x, item.data.y, item.data.BrushSize, item.data.BrushSize);
+        data.data.forEach((point) => {
+          if (point.command === "DrawMouseEvent") {
+            ctx.fillStyle = rgbaToText(point.data.color)
+            ctx.fillRect(point.data.x, point.data.y, point.data.BrushSize, point.data.BrushSize)
           }
-          if (item.command === "FillMouseEvent") {
-            var temp = color.slice(0);
-            color[0] = item.data.hostColor[0];
-            color[1] = item.data.hostColor[1];
-            color[2] = item.data.hostColor[2];
-            color[3] = item.data.hostColor[3];
-            CreatePath({
-              x: item.data.x,
-              y: item.data.y,
-              color: item.data.color
+          if (point.command === "FillMouseEvent") {
+            var temp = color.slice(0)
+            color[0] = point.data.hostColor[0]
+            color[1] = point.data.hostColor[1]
+            color[2] = point.data.hostColor[2]
+            color[3] = point.data.hostColor[3]
+            DrawingEnviroment.tools.bucket.FillArea({
+              x: point.data.x,
+              y: point.data.y,
+              color: point.data.color
             }, ctx, color)
-            color[0] = temp[0];
-            color[1] = temp[1];
-            color[2] = temp[2];
-            color[3] = temp[3];
+            color[0] = temp[0]
+            color[1] = temp[1]
+            color[2] = temp[2]
+            color[3] = temp[3]
           }
-      
-        });
-      
+        })   
       })
 }
 
@@ -11642,12 +11748,12 @@ function Socket_MouseEvents_Recieved(ctx,socket){
     socket.on("MouseEvent", function (data) {
         data.points.forEach((item, i) => {
           if (item.y < ctx.canvas.height ) {
-            ctx.fillStyle = rgbaToText(data.color);
-            ctx.beginPath();
-            ctx.arc(item.x, item.y, 0.5, 0, 2 * Math.PI);
-            ctx.fill();
+            ctx.fillStyle = rgbaToText(data.color)
+            ctx.beginPath()
+            ctx.arc(item.x, item.y, 0.5, 0, 2 * Math.PI)
+            ctx.fill()
           }
-        });
+        })
       
       })
 }
@@ -11658,8 +11764,8 @@ function Socket_HandleUserMovement_Recieved(socket){
           var tempspan = document.createElement("span")
           var tempcursor = document.createElement("div")
           var tempcursorImage = document.createElement("img")
-          tempspan.id = data.id;
-          tempcursor.id = data.cursorid;
+          tempspan.id = data.id
+          tempcursor.id = data.cursorid
           document.getElementById("container").appendChild(tempspan)
           document.getElementById("container").appendChild(tempcursor)
           tempcursor.appendChild(tempcursorImage)
@@ -11667,7 +11773,7 @@ function Socket_HandleUserMovement_Recieved(socket){
           $("#" + data.id).css("top", data.y)
           $("#" + data.id).css("position", "absolute")
           tempcursorImage.src = "Cursor.png"
-          tempcursor.id = data.cursorid;
+          tempcursor.id = data.cursorid
           $("#" + data.cursorid).css("left", data.x - 12)
           $("#" + data.cursorid).css("top", data.y - 12)
           $("#" + data.cursorid).css("position", "absolute")
@@ -11688,7 +11794,7 @@ function Socket_NewUser_Recieved(socket){
         data.forEach(function (data) {
           var tempspan = document.createElement("span")
           var tempcursorImage = document.createElement("img")
-          tempspan.id = data.id;
+          tempspan.id = data.id
           var tempcursor = document.createElement("div")
           //var tempCursorToolIcon=document.createElement("img")
       
@@ -11698,7 +11804,7 @@ function Socket_NewUser_Recieved(socket){
           //tempcursor.appendChild(tempCursorToolIcon)
         
           tempcursorImage.src = "Cursor.png"
-          tempcursor.id = data.cursorid;
+          tempcursor.id = data.cursorid
           $("#" + data.id).css("left", data.x)
           $("#" + data.id).css("top", data.y)
           $("#" + data.id).css("position", "absolute")
@@ -11712,25 +11818,25 @@ function Socket_NewUser_Recieved(socket){
 }
 
 
-function Socket_FillEvent_Recieved(ctx,color,socket){
+function Socket_FillEvent_Recieved(ctx,color,socket,DrawingEnviroment){
     socket.on('fill', function (data) {
 
-        var temp = color.slice(0);
-        color[0] = data.hostColor[0];
-        color[1] = data.hostColor[1];
-        color[2] = data.hostColor[2];
-        color[3] = data.hostColor[3];
+        var temp = color.slice(0)
+        color[0] = data.hostColor[0]
+        color[1] = data.hostColor[1]
+        color[2] = data.hostColor[2]
+        color[3] = data.hostColor[3]
       
-        CreatePath({
+        DrawingEnviroment.tools.bucket.FillArea({
           x: data.x,
           y: data.y,
           color: data.color
         }, ctx, color)
       
-        color[0] = temp[0];
-        color[1] = temp[1];
-        color[2] = temp[2];
-        color[3] = temp[3];
+        color[0] = temp[0]
+        color[1] = temp[1]
+        color[2] = temp[2]
+        color[3] = temp[3]
       
       
       })
@@ -11744,23 +11850,21 @@ function Socket_NameChangeEvent_Recieved(socket){
 
 function Socket_CommentEvent_Recieved(socket){
    
-    socket.on('comment', function (data) {
-        
+    socket.on('comment', function (data) { 
         var chat = document.getElementById("chatArea")
         var RecievedCommentSpan = document.createElement('div')
-        RecievedCommentSpan.classList = "blueSpan";
-        RecievedCommentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
-        RecievedCommentSpan.value = "  " + data + "\n";
-        RecievedCommentSpan.innerHTML = " \n" + data;
+        RecievedCommentSpan.classList = "blueSpan"
+        RecievedCommentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
+        RecievedCommentSpan.value = "  " + data + "\n"
+        RecievedCommentSpan.innerHTML = " \n" + data
         if (chatCounter > chatLimit) {
-          chatCounter = 0;
+          chatCounter = 0
           chat.innerHTML = ''
         }
-        chatCounter++;
-        chat.append(RecievedCommentSpan);
+        chatCounter++
+        chat.append(RecievedCommentSpan)
       
       })
-      //return chatCounter
 }
 
 function ReturnChatCount(){ return chatCounter}
@@ -11775,7 +11879,7 @@ module.exports = {
     ChatCount_Inc,ChatCount_Set
    
 }
-},{"./FillToolFunctions.js":4,"./PixelFunctions.js":5,"jquery":3}],10:[function(require,module,exports){
+},{"./FillToolFunctions.js":13,"./PixelFunctions.js":14,"jquery":3}],19:[function(require,module,exports){
 //the Nodemon run script
 //nodemon --exec npm start --ignore 'public/bundle/*'  
 
@@ -11789,352 +11893,167 @@ module.exports = {
 
 //   }
 // }
-//const io = require('socket.io')(80);
-var BucketToolImageUrl = "paint-Bukcet3.png";
-var EarserToolImageUrl = "eraser.png";
-var ColorPickerToolImageUrl = "color-picker.png";
-var BrushToolImageUrl = "BrushTool.png";
-var BrushUpImageUrl = "paint-brush.png";
 
 var BackgroundIcon_1="kitty-1.png"
-var BackgroundIcon_2="paint-2.png"
 var BackgroundIcon_3="painting-3.png"
-var BackgroundIcon_4="paint-tube-4.png"
-var BackgroundIcon_5="Paint-5.png"
-var BackgroundIcon_6="Paint-6.png"
-
-var SaveIcon_1="floppy-disk.png"
-var SaveIcon_2="floppy-disk -2.png"
-var SaveIcon_3="floppy-disk-3.png"
-var SaveIcon_4="disk-4.png"
-
-
-var $ = require("jquery");
-let {saveAs} = require('file-saver');
-const {calcStraightLine} = require("../Modules/PixelMath.js");
+var $ = require("jquery")
+let {saveAs} = require('file-saver')
+const {calcStraightLine} = require("../Modules/PixelMath.js")
 const {rgbaToText,hexToRGB} = require("../Modules/PixelFunctions.js")
-const {CreatePath} = require("../Modules/FillToolFunctions.js")
-const {UserNameAndCursorDivsSetup, PushColors,RandomizeChatIcon}=require("../Modules/SetUpFunctions.js")
-const {Socket_DrawEvents_Recieved,
-       Socket_MouseEvents_Recieved,
-       Socket_NewUser_Recieved,
-       Socket_HandleUserMovement_Recieved,
-       Socket_FillEvent_Recieved,
-       Socket_NameChangeEvent_Recieved,
-       Socket_CommentEvent_Recieved,
-       ReturnChatCount,
-       ReturnChatLimit,
-       ChatCount_Set,
-       ChatCount_Inc   }=require("../Modules/SocketOnFunctions.js")
+const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFunctions.js")
+const {ReturnChatCount,ReturnChatLimit,ChatCount_Set,ChatCount_Inc}=require("../Modules/SocketOnFunctions.js")
+const DrawingEnv=require("../Modules/DrawingEnviroment.js")
+
 //https://together-draw-stuff.herokuapp.com
 //http://localhost:3000
 var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
-});
-var canvas = document.getElementById('Canvas');
-var ctx = canvas.getContext('2d');
-var  Username;
-Username = "anon"
-var cont = false;
-var CorrectionX = 120;
-var CorrectionY = 19;
-var mouseX;
-var mouseY;
-var PreviousMouseX;
-var PreviousMouseY;
+})
+var canvas = document.getElementById('Canvas')
+var ctx = canvas.getContext('2d')
+var canvWidth = 1094
+var canvHeight = 500
+ctx.canvas.width=canvWidth
+ctx.canvas.height=canvHeight
+var CorrectionX = 120
+var CorrectionY = 19
 
-var color = '#000000';
-var BrushSize = 2;
-color = hexToRGB(color, 255)
+let DrawingEnviroment=new DrawingEnv.DrawingEnviroment(canvWidth,canvHeight,0,0,"anon","#000000",CorrectionX,CorrectionY)
 
-var BucketColor = []
-BucketColor[0] = color[0];
-BucketColor[1] = color[1];
-BucketColor[2] = color[2];
-BucketColor[3] = color[3];
-var allColors = []
-var MouseEventsList = [];
-ctx.canvas.width = 1094;
-ctx.canvas.height = 500;
-ctx.strokeRect(20, 20, 1040, 445);
-ctx.fillStyle = "white";
-ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-var canvWidth = ctx.canvas.width;
-ctx.fillStyle = "black";
-var canvHeight = ctx.canvas.height;
-
-var NamePicked = false;
-var EraserBool = false;
-var BrushBool = true;
-var ColorPickerBool = false;
-var BucketBool = false;
-
-RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_2,BackgroundIcon_3,BackgroundIcon_4,BackgroundIcon_5,BackgroundIcon_6,SaveIcon_1,SaveIcon_2
-  ,SaveIcon_3,SaveIcon_4)
-CreatePalletDivs();
 socket.on('connect', () => {
-  //////
-  UserNameAndCursorDivsSetup(socket,Username)
+  RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3)
+  setUpInitialEnviroment(ctx,socket,DrawingEnviroment.color,DrawingEnviroment.userName,DrawingEnviroment)
+  setInterval(sendUsersMovments,30)
   
-  Socket_DrawEvents_Recieved(ctx,color,socket)
-  Socket_MouseEvents_Recieved(ctx,socket);
-  Socket_HandleUserMovement_Recieved(socket)
-  Socket_NewUser_Recieved(socket)
-  Socket_FillEvent_Recieved(ctx,color,socket)
-  Socket_NameChangeEvent_Recieved(socket)
-  Socket_CommentEvent_Recieved(socket)
-    setInterval(SendMoves,30)
-  
-  });
+  })
 
-$("#SaveBtn").click((e) => document.getElementById("Canvas").toBlob(function (blob) {
-  saveAs(blob, "pretty image.png");
-}))
 
-$("#BrushSizeUP").click((e) => {
-
-  if (BrushSize < 6) BrushSize++
-
-})
-$("#BrushSizeDown").click((e) => {
-  if (BrushSize > 2) BrushSize--
-})
-$("#EraserTool").click((e) => {
-  if (!EraserBool) {
-    $("#Image_2").attr("src", "")
-    color = hexToRGB("#ffffff", 255);
-    $("#toolsDiv ").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    BrushBool = false;
-    ColorPickerBool = false;
-    EraserBool = true;
-    BucketBool = false;
-  }
-
-})
-$("#BrushTool").click((e) => {
-  if (!BrushBool) {
-    $("#Image_2").attr("src", "")
-    $("#toolsDiv").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    BrushBool = true;
-    ColorPickerBool = false;
-    EraserBool = false;
-    BucketBool = false;
-  }
-
-})
-
-$("#ColorPickerTool").click((e) => {
-  if (!ColorPickerBool) {
-    $("#Image_2").attr("src", "dropper.png")
-    $("#toolsDiv").children().css("opacity", "100%")
-    // $("#toolsDiv").children().hover(function(){$(this).css("opacity", "100%")})
-    $(e.target).css("opacity", "30%")
-    BrushBool = false;
-    ColorPickerBool = true;
-    EraserBool = false;
-    BucketBool = false;
-  }
-
-})
-
-$("#BucketTool").click((e) => {
-  if (!BucketBool) {
-    BucketColor[0] = color[0];
-    BucketColor[1] = color[1];
-    BucketColor[2] = color[2];
-    BucketColor[3] = color[3];
-    $("#toolsDiv").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    $("#Image_2").attr("src", "paint-bucket-4.png")
-    BrushBool = false;
-    ColorPickerBool = false;
-    EraserBool = false;
-    BucketBool = true;
-  }
-})
-
-canvas.addEventListener('mousedown', function (e) {
-  if(e.which==1){
-    cont = true;
-    if (BucketBool) {
-      var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-      if (!(mouseX - 9 > canvWidth || mouseY - 9 > canvHeight)) {
-        BoolFill = true;
-        CreatePath({
-          x: mouseX - CorrectionX,
-          y: mouseY - CorrectionY,
-          color: tempColor
-        }, ctx, BucketColor) 
-        socket.emit('fill', {
-          x: mouseX - CorrectionX,
-          y: mouseY - CorrectionY,
-          color: tempColor,
-          hostColor: BucketColor
-        })
-      }
+canvas.addEventListener('mousedown', function (event) {
+  var isEventALeftClick=event.which==1
+  if(isEventALeftClick){
+    DrawingEnviroment.mouse.isDown = true
+    if (DrawingEnviroment.tools.bucket.isActive) {
+      DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color,socket,DrawingEnviroment.isNamePicked,DrawingEnviroment,ctx)
     }
-    if(ColorPickerBool){
-     var tempCol=ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-      color[0]=tempCol[0];
-      color[1]=tempCol[1];
-      color[2]=tempCol[2];
-      color[3]=tempCol[3];
+    if(DrawingEnviroment.tools.colorPicker.isActive){
+     var pickedColor=ctx.getImageData(DrawingEnviroment.mouse.x - DrawingEnviroment.mouse.CorrectionX, DrawingEnviroment.mouse.y - DrawingEnviroment.mouse.CorrectionY, 1, 1).data
+     DrawingEnviroment.setBrushColor(pickedColor)
     }
   }
-  
-});
+})
 ///
 
 canvas.addEventListener('mouseup', function () {
-  cont = false;
-});
+  DrawingEnviroment.mouse.isDown = false
+})
 
-function DrawCanv() {
-  if (cont && (BrushBool || EraserBool)) {
-    var list = calcStraightLine({
-      left: mouseX - CorrectionX,
-      top: mouseY - CorrectionY
+
+function drawAndEmitInterval() {
+  var mouse=DrawingEnviroment.mouse
+  var eraser=DrawingEnviroment.tools.eraser
+  var brush=DrawingEnviroment.tools.brush
+  if (mouse.isDown && (brush.isActive || eraser.isActive)) {
+    var straightLineListPoints = calcStraightLine({
+      left: mouse.x - mouse.CorrectionX,
+      top: mouse.y - mouse.CorrectionY
     }, {
-      left: PreviousMouseX - CorrectionX,
-      top: PreviousMouseY - CorrectionY
-    }, color, BrushSize);
-    //
-    for (var i = 0; i < list.length; i++) {
-      ctx.fillStyle = rgbaToText(list[i].color);
-      ctx.fillRect(list[i].x, list[i].y, BrushSize, BrushSize);
+      left: mouse.previousX - mouse.CorrectionX,
+      top: mouse.previousY - mouse.CorrectionY
+    }, DrawingEnviroment.color, DrawingEnviroment.brushSize)
+
+    for (var i = 0; i < straightLineListPoints.length; i++) {
+      var x=straightLineListPoints[i].x
+      var y =straightLineListPoints[i].y
+      var fillSize=DrawingEnviroment.brushSize
+      ctx.fillStyle = rgbaToText(DrawingEnviroment.color)
+      ctx.fillRect(x, y, fillSize, fillSize)
     }
     //
-    socket.emit("MouseEvents", list);
+    socket.emit("MouseEvents", straightLineListPoints)
   }
 }
 //
-function CreatePalletDivs() {
-  PushColors(allColors)
-  var colorpallentTemp = document.getElementById("ColorPallet")
-  for (var i = 0; i < allColors.length; i++) {
-    let tempPallet = document.createElement("div");
-    colorpallentTemp.appendChild(tempPallet);
-    tempPallet.id = allColors[i].substring(1);
-    tempPallet.style.backgroundColor = "#" + tempPallet.id
-    $("#" + tempPallet.id).click((e) => {
-        if (BucketBool) {
-          BucketColor = hexToRGB("#" + e.target.id, 255)
-        }
-        if (BrushBool) {
-          color = hexToRGB("#" + e.target.id, 255)
-        }
-      }
-    )
-  }
-}
+
 
 $("#ColorInput").on("input",(e) => {
-  if (BucketBool) {
-    BucketColor = hexToRGB( e.target.value, 255)
+  DrawingEnviroment.color = hexToRGB(e.target.value, 255)
 
-  }
-  if (BrushBool) {
-    color = hexToRGB(e.target.value, 255)
-
-  }
 })
 
 $("body").mousemove(function (e) {
-  $("#" + socket.id + "-span").css("left", e.pageX - (CorrectionX - 15))
-  $("#" + socket.id + "-span").css("top", e.pageY - (CorrectionY - 15))
-  $("#" + socket.id + "-cursor").css("left", e.pageX - (CorrectionX + 18))
-  $("#" + socket.id + "-cursor").css("top", e.pageY - (CorrectionY + 12))
-  PreviousMouseX = mouseX;
-  PreviousMouseY = mouseY;
-  mouseX = e.pageX;
-  mouseY = e.pageY;
-  MouseEventsList.push({
-    x: e.pageX,
-    y: e.pageY,
-    lastx: PreviousMouseX,
-    lasty: PreviousMouseY
-  })
+  var mouse =DrawingEnviroment.mouse
+  $("#" + socket.id + "-span").css("left", e.pageX - (mouse.CorrectionX - 15))
+  $("#" + socket.id + "-span").css("top", e.pageY - (mouse.CorrectionY - 15))
+  $("#" + socket.id + "-cursor").css("left", e.pageX - (mouse.CorrectionX + 18))
+  $("#" + socket.id + "-cursor").css("top", e.pageY - (mouse.CorrectionY + 12))
+  DrawingEnviroment.mouse.previousX = mouse.x
+  DrawingEnviroment.mouse.previousY = mouse.y
+  mouse.x = e.pageX
+  mouse.y = e.pageY
+ 
 })
 
 $("#CommentBtn").click(function () {
   var commBox = document.getElementById("commentBox")
-  socket.emit('comment', "  " + Username + ": " + commBox.value + "\n")
-  var commentSpan = document.createElement('div');
-  var chat = document.getElementById("chatArea");
-  commentSpan.value = Username + ": " + commBox.value + '\n';
-  commentSpan.innerHTML = Username + ": " + commBox.value + '\n';
-  commBox.value = "";
+  socket.emit('comment', "  " + DrawingEnviroment.userName + ": " + commBox.value + "\n")
+  var commentSpan = document.createElement('div')
+  var chat = document.getElementById("chatArea")
+  commentSpan.value = DrawingEnviroment.userName + ": " + commBox.value + '\n'
+  commentSpan.innerHTML = DrawingEnviroment.userName + ": " + commBox.value + '\n'
+  commBox.value = ""
   commentSpan.classList = 'redSpan'
-  commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
-  chat.value = chat.value + commentSpan.value;
+  commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
+  chat.value = chat.value + commentSpan.value
   if (ReturnChatCount() > ReturnChatLimit()) {
-    chat.innerHTML = '';
-    ChatCount_Set(0);
+    chat.innerHTML = ''
+    ChatCount_Set(0)
   }
-  chat.append(commentSpan);
+  chat.append(commentSpan)
   ChatCount_Inc()
 })
 document.querySelector("#commentBox").addEventListener("keydown", event => {
-  if (event.key !== "Enter") return;
-  document.querySelector("#CommentBtn").click();
-  event.preventDefault();
-});
+  if (event.key !== "Enter") return
+  document.querySelector("#CommentBtn").click()
+  event.preventDefault()
+})
 
 $("#NameBtn").click(function () {
   var NameBox = document.getElementById("NameBox")
-  NameBox.value = NameBox.value.trim();
-  if (!NamePicked && NameBox.value != "") {
+  NameBox.value = NameBox.value.trim()
+  if (!DrawingEnviroment.isNamePicked && NameBox.value != "") {
     var NameBox = document.getElementById("NameBox")
-    Username = NameBox.value
-    NamePicked = true;
-    Username = NameBox.value
-    document.getElementById(socket.id + "-span").innerHTML = Username
+    DrawingEnviroment.userName = NameBox.value
+    DrawingEnviroment.isNamePicked = true
+    DrawingEnviroment.userName = NameBox.value
+    document.getElementById(socket.id + "-span").innerHTML = DrawingEnviroment.userName
     socket.emit("NameChange", {
       id: socket.id + "-span",
-      Username: Username
+      Username: DrawingEnviroment.userName
     })
-    NameBox.value = "";
-    NameBox.setAttribute('readonly', 'readonly');
-    $("#PickANameWindow").css("animation", "MoveUp 0.7s");
-    $("#fullCanv").css("pointer-events", "auto");
-    $("#fullCanv").css("animation", " OpacityUp 1.2s");
+    NameBox.value = ""
+    NameBox.setAttribute('readonly', 'readonly')
+    $("#PickANameWindow").css("animation", "MoveUp 0.7s")
+    $("#fullCanv").css("pointer-events", "auto")
+    $("#fullCanv").css("animation", " OpacityUp 1.2s")
     $("#fullCanv").css("animation-fill-mode", "  forwards")
   }
 })
-setInterval(DrawCanv, 10);
+setInterval(drawAndEmitInterval, 10)
 
-function SendMoves(){
+function sendUsersMovments(){
   socket.emit("UserMoved", {
-    x: mouseX - CorrectionX,
-    y: mouseY - CorrectionY,
+    x: DrawingEnviroment.mouse.x - DrawingEnviroment.mouse.CorrectionX,
+    y: DrawingEnviroment.mouse.y - DrawingEnviroment.mouse.CorrectionY,
     id: socket.id + "-span",
     cursorid: socket.id + "-cursor",
-    Username: Username
+    Username: DrawingEnviroment.userName
   })
 }
-window.onkeydown = handleKeyDown;
+window.onkeydown = handleKeyDown
 /////////////////
 function handleKeyDown(event) {
-  if (event.key === "t" && NamePicked) {
-    var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-    if (!(mouseX - 9 > canvWidth || mouseY - 9 > canvHeight)) {
-      BoolFill = true;
-      CreatePath({
-        x: mouseX - CorrectionX,
-        y: mouseY - CorrectionY,
-        color: tempColor
-      }, ctx, color) //ctx.getImageData(mouseX, mouseY, 1, 1).data
-      socket.emit('fill', {
-        x: mouseX - CorrectionX,
-        y: mouseY - CorrectionY,
-        color: tempColor,
-        hostColor: color
-      })
-    }
+  if (event.key === "t") {
+    DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color,socket,DrawingEnviroment.isNamePicked,DrawingEnviroment,ctx)
   }
-
-
 }
-},{"../Modules/FillToolFunctions.js":4,"../Modules/PixelFunctions.js":5,"../Modules/PixelMath.js":6,"../Modules/SetUpFunctions.js":8,"../Modules/SocketOnFunctions.js":9,"file-saver":2,"jquery":3}]},{},[10]);
+},{"../Modules/DrawingEnviroment.js":12,"../Modules/PixelFunctions.js":14,"../Modules/PixelMath.js":15,"../Modules/SetUpFunctions.js":17,"../Modules/SocketOnFunctions.js":18,"file-saver":2,"jquery":3}]},{},[19]);

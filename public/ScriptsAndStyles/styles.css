@@ -18,7 +18,7 @@ body {
 }
 
 #BucketTool {
-  background-image: url('paint-Bukcet3.png');
+
   background-size: 84%;
   background-position-x: 6px;
   background-position-y: 7px;
@@ -29,36 +29,27 @@ body {
 }
 
 #BrushTool {
-  background-image: url('BrushTool.png');
   background-size: 84%;
   background-position-x: 6px;
   background-position-y: 7px;
-  /* background-blend-mode: initial; */
   background-color: #bcdacf;
-  /* background-blend-mode: color; */
   background-repeat: no-repeat;
   opacity: 40%;
 }
 
 #ColorPickerTool {
-  background-image: url('color-picker.png');
   background-size: 84%;
   background-position-x: 6px;
   background-position-y: 7px;
-  /* background-blend-mode: initial; */
   background-color: #bcdacf;
-  /* background-blend-mode: color; */
   background-repeat: no-repeat;
 }
 
 #EraserTool {
-  background-image: url('eraser.png');
   background-size: 84%;
   background-position-x: 6px;
   background-position-y: 7px;
-  /* background-blend-mode: initial; */
   background-color: #bcdacf;
-  /* background-blend-mode: color; */
   background-repeat: no-repeat;
 }
 
@@ -67,9 +58,7 @@ body {
   background-size: 173%;
   background-position-x: -27px;
   background-position-y: 5px;
-  /* background-blend-mode: initial; */
   background-color: #bcdacf;
-  /* background-blend-mode: color; */
   background-repeat: no-repeat;
 }
 
@@ -78,9 +67,7 @@ body {
   background-size: 43%;
   background-position-x: 23px;
   background-position-y: 23px;
-  /* background-blend-mode: initial; */
   background-color: #bcdacf;
-  /* background-blend-mode: color; */
   background-repeat: no-repeat;
 }
 
@@ -89,9 +76,6 @@ body {
   background-size: 91%;
   background-position-x: 4px;
   background-position-y: 8px;
-  /* background-blend-mode: initial; */
-  /* background-color: #bcdacf; */
-  /* background-blend-mode: color; */
   background-repeat: no-repeat;
   position: absolute;
   width: 100px;
@@ -138,10 +122,7 @@ body {
   position: relative;
   top: 54px;
   left: 961px;
-  /* display: block; */
-  /* display: block; */
   display: inline-block;
-  /* z-index: 1; */
   padding: 1em;
   margin: -1em;
   background-clip: content-box;
@@ -175,11 +156,6 @@ input[type="color"]::-webkit-color-swatch {
   -moz-user-select: -moz-none;
   -khtml-user-select: none;
   -webkit-user-select: none;
-
-  /*
-     Introduced in IE 10.
-     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
-   */
   -ms-user-select: none;
   user-select: none;
   pointer-events: none;
@@ -193,11 +169,6 @@ input[type="color"]::-webkit-color-swatch {
   -moz-user-select: -moz-none;
   -khtml-user-select: none;
   -webkit-user-select: none;
-
-  /*
-     Introduced in IE 10.
-     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
-   */
   -ms-user-select: none;
   user-select: none;
   pointer-events: none;

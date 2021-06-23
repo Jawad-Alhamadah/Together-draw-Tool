@@ -10,29 +10,23 @@ var server = app.listen(port, function () {
   console.log("3000......")
 })
 var io = socket(server);
-var canvWidth = 1150;
 var UserNameList = [];
-var connectCounter = 0;
 var MouseEventsList = [];
 var SpanInfo = [];
 
 app.use(express.static('public/bundle'));
-
 app.use(express.static('public/ScriptsAndStyles'));
 app.use(express.static('public/Resources'));
 app.use(express.static('public/Modules'));
 app.use(express.static('public/bundle'));
+
 io.on('connection', function (socket) {
-  socket.on('connect', function () {
-    connectCounter++;
-  });
-  socket.on('disconnect', function () {
-    connectCounter--;
-  });
+  
   UserNameList.push({
     Name: "anon",
     Id: socket.id
   })
+
   socket.on('draw', function (data) {
     io.sockets.emit('draw', data);
   })
@@ -54,7 +48,6 @@ io.on('connection', function (socket) {
         item.Username = data.Username;
         temp = item
       }
-
     })
     socket.broadcast.emit("NameChange", temp)
 
@@ -86,18 +79,12 @@ io.on('connection', function (socket) {
     socket.broadcast.emit("draw", {
       data: templist
     });
-
-
   })
   socket.emit("draw", {
     data: MouseEventsList
   })
   socket.emit("newUserSpans", SpanInfo);
-
 })
 
-function GetBoolIndex(x, y) {
-  return (y * canvWidth) + x
 
-}
 //
