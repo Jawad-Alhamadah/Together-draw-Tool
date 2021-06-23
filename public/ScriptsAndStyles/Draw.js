@@ -41,7 +41,7 @@ let DrawingEnviroment=new DrawingEnv.DrawingEnviroment(canvWidth,canvHeight,0,0,
 socket.on('connect', () => {
   RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3)
   setUpInitialEnviroment(ctx,socket,DrawingEnviroment.color,DrawingEnviroment.userName,DrawingEnviroment)
-  setInterval(sendUsersMovments,30)
+  setInterval(sendUsersMovments,1)
   
   })
 
