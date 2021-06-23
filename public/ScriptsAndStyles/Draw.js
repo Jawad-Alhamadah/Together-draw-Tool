@@ -11,351 +11,166 @@
 
 //   }
 // }
-//const io = require('socket.io')(80);
-var BucketToolImageUrl = "paint-Bukcet3.png";
-var EarserToolImageUrl = "eraser.png";
-var ColorPickerToolImageUrl = "color-picker.png";
-var BrushToolImageUrl = "BrushTool.png";
-var BrushUpImageUrl = "paint-brush.png";
 
 var BackgroundIcon_1="kitty-1.png"
-var BackgroundIcon_2="paint-2.png"
 var BackgroundIcon_3="painting-3.png"
-var BackgroundIcon_4="paint-tube-4.png"
-var BackgroundIcon_5="Paint-5.png"
-var BackgroundIcon_6="Paint-6.png"
-
-var SaveIcon_1="floppy-disk.png"
-var SaveIcon_2="floppy-disk -2.png"
-var SaveIcon_3="floppy-disk-3.png"
-var SaveIcon_4="disk-4.png"
-
-
-var $ = require("jquery");
-let {saveAs} = require('file-saver');
-const {calcStraightLine} = require("../Modules/PixelMath.js");
+var $ = require("jquery")
+let {saveAs} = require('file-saver')
+const {calcStraightLine} = require("../Modules/PixelMath.js")
 const {rgbaToText,hexToRGB} = require("../Modules/PixelFunctions.js")
-const {CreatePath} = require("../Modules/FillToolFunctions.js")
-const {UserNameAndCursorDivsSetup, PushColors,RandomizeChatIcon}=require("../Modules/SetUpFunctions.js")
-const {Socket_DrawEvents_Recieved,
-       Socket_MouseEvents_Recieved,
-       Socket_NewUser_Recieved,
-       Socket_HandleUserMovement_Recieved,
-       Socket_FillEvent_Recieved,
-       Socket_NameChangeEvent_Recieved,
-       Socket_CommentEvent_Recieved,
-       ReturnChatCount,
-       ReturnChatLimit,
-       ChatCount_Set,
-       ChatCount_Inc   }=require("../Modules/SocketOnFunctions.js")
+const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFunctions.js")
+const {ReturnChatCount,ReturnChatLimit,ChatCount_Set,ChatCount_Inc}=require("../Modules/SocketOnFunctions.js")
+const DrawingEnv=require("../Modules/DrawingEnviroment.js")
+
 //https://together-draw-stuff.herokuapp.com
 //http://localhost:3000
 var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
-});
-var canvas = document.getElementById('Canvas');
-var ctx = canvas.getContext('2d');
-var  Username;
-Username = "anon"
-var cont = false;
-var CorrectionX = 120;
-var CorrectionY = 19;
-var mouseX;
-var mouseY;
-var PreviousMouseX;
-var PreviousMouseY;
+})
+var canvas = document.getElementById('Canvas')
+var ctx = canvas.getContext('2d')
+var canvWidth = 1094
+var canvHeight = 500
+ctx.canvas.width=canvWidth
+ctx.canvas.height=canvHeight
+var CorrectionX = 120
+var CorrectionY = 19
 
-var color = '#000000';
-var BrushSize = 2;
-color = hexToRGB(color, 255)
+let DrawingEnviroment=new DrawingEnv.DrawingEnviroment(canvWidth,canvHeight,0,0,"anon","#000000",CorrectionX,CorrectionY)
 
-var BucketColor = []
-BucketColor[0] = color[0];
-BucketColor[1] = color[1];
-BucketColor[2] = color[2];
-BucketColor[3] = color[3];
-var allColors = []
-var MouseEventsList = [];
-ctx.canvas.width = 1094;
-ctx.canvas.height = 500;
-ctx.strokeRect(20, 20, 1040, 445);
-ctx.fillStyle = "white";
-ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-var canvWidth = ctx.canvas.width;
-ctx.fillStyle = "black";
-var canvHeight = ctx.canvas.height;
-
-var NamePicked = false;
-var EraserBool = false;
-var BrushBool = true;
-var ColorPickerBool = false;
-var BucketBool = false;
-
-RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_2,BackgroundIcon_3,BackgroundIcon_4,BackgroundIcon_5,BackgroundIcon_6,SaveIcon_1,SaveIcon_2
-  ,SaveIcon_3,SaveIcon_4)
-CreatePalletDivs();
 socket.on('connect', () => {
-  //////
-  UserNameAndCursorDivsSetup(socket,Username)
+  RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3)
+  setUpInitialEnviroment(ctx,socket,DrawingEnviroment.color,DrawingEnviroment.userName,DrawingEnviroment)
+  setInterval(sendUsersMovments,30)
   
-  Socket_DrawEvents_Recieved(ctx,color,socket)
-  Socket_MouseEvents_Recieved(ctx,socket);
-  Socket_HandleUserMovement_Recieved(socket)
-  Socket_NewUser_Recieved(socket)
-  Socket_FillEvent_Recieved(ctx,color,socket)
-  Socket_NameChangeEvent_Recieved(socket)
-  Socket_CommentEvent_Recieved(socket)
-    setInterval(SendMoves,30)
-  
-  });
+  })
 
-$("#SaveBtn").click((e) => document.getElementById("Canvas").toBlob(function (blob) {
-  saveAs(blob, "pretty image.png");
-}))
 
-$("#BrushSizeUP").click((e) => {
-
-  if (BrushSize < 6) BrushSize++
-
-})
-$("#BrushSizeDown").click((e) => {
-  if (BrushSize > 2) BrushSize--
-})
-$("#EraserTool").click((e) => {
-  if (!EraserBool) {
-    $("#Image_2").attr("src", "")
-    color = hexToRGB("#ffffff", 255);
-    $("#toolsDiv ").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    BrushBool = false;
-    ColorPickerBool = false;
-    EraserBool = true;
-    BucketBool = false;
-  }
-
-})
-$("#BrushTool").click((e) => {
-  if (!BrushBool) {
-    $("#Image_2").attr("src", "")
-    $("#toolsDiv").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    BrushBool = true;
-    ColorPickerBool = false;
-    EraserBool = false;
-    BucketBool = false;
-  }
-
-})
-
-$("#ColorPickerTool").click((e) => {
-  if (!ColorPickerBool) {
-    $("#Image_2").attr("src", "dropper.png")
-    $("#toolsDiv").children().css("opacity", "100%")
-    // $("#toolsDiv").children().hover(function(){$(this).css("opacity", "100%")})
-    $(e.target).css("opacity", "30%")
-    BrushBool = false;
-    ColorPickerBool = true;
-    EraserBool = false;
-    BucketBool = false;
-  }
-
-})
-
-$("#BucketTool").click((e) => {
-  if (!BucketBool) {
-    BucketColor[0] = color[0];
-    BucketColor[1] = color[1];
-    BucketColor[2] = color[2];
-    BucketColor[3] = color[3];
-    $("#toolsDiv").children().css("opacity", "100%")
-    $(e.target).css("opacity", "30%")
-    $("#Image_2").attr("src", "paint-bucket-4.png")
-    BrushBool = false;
-    ColorPickerBool = false;
-    EraserBool = false;
-    BucketBool = true;
-  }
-})
-
-canvas.addEventListener('mousedown', function (e) {
-  if(e.which==1){
-    cont = true;
-    if (BucketBool) {
-      var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-      if (!(mouseX - 9 > canvWidth || mouseY - 9 > canvHeight)) {
-        BoolFill = true;
-        CreatePath({
-          x: mouseX - CorrectionX,
-          y: mouseY - CorrectionY,
-          color: tempColor
-        }, ctx, BucketColor) 
-        socket.emit('fill', {
-          x: mouseX - CorrectionX,
-          y: mouseY - CorrectionY,
-          color: tempColor,
-          hostColor: BucketColor
-        })
-      }
+canvas.addEventListener('mousedown', function (event) {
+  var isEventALeftClick=event.which==1
+  if(isEventALeftClick){
+    DrawingEnviroment.mouse.isDown = true
+    if (DrawingEnviroment.tools.bucket.isActive) {
+      DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color,socket,DrawingEnviroment.isNamePicked,DrawingEnviroment,ctx)
     }
-    if(ColorPickerBool){
-     var tempCol=ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-      color[0]=tempCol[0];
-      color[1]=tempCol[1];
-      color[2]=tempCol[2];
-      color[3]=tempCol[3];
+    if(DrawingEnviroment.tools.colorPicker.isActive){
+     var pickedColor=ctx.getImageData(DrawingEnviroment.mouse.x - DrawingEnviroment.mouse.CorrectionX, DrawingEnviroment.mouse.y - DrawingEnviroment.mouse.CorrectionY, 1, 1).data
+     DrawingEnviroment.setBrushColor(pickedColor)
     }
   }
-  
-});
+})
 ///
 
 canvas.addEventListener('mouseup', function () {
-  cont = false;
-});
+  DrawingEnviroment.mouse.isDown = false
+})
 
-function DrawCanv() {
-  if (cont && (BrushBool || EraserBool)) {
-    var list = calcStraightLine({
-      left: mouseX - CorrectionX,
-      top: mouseY - CorrectionY
+
+function drawAndEmitInterval() {
+  var mouse=DrawingEnviroment.mouse
+  var eraser=DrawingEnviroment.tools.eraser
+  var brush=DrawingEnviroment.tools.brush
+  if (mouse.isDown && (brush.isActive || eraser.isActive)) {
+    var straightLineListPoints = calcStraightLine({
+      left: mouse.x - mouse.CorrectionX,
+      top: mouse.y - mouse.CorrectionY
     }, {
-      left: PreviousMouseX - CorrectionX,
-      top: PreviousMouseY - CorrectionY
-    }, color, BrushSize);
-    //
-    for (var i = 0; i < list.length; i++) {
-      ctx.fillStyle = rgbaToText(list[i].color);
-      ctx.fillRect(list[i].x, list[i].y, BrushSize, BrushSize);
+      left: mouse.previousX - mouse.CorrectionX,
+      top: mouse.previousY - mouse.CorrectionY
+    }, DrawingEnviroment.color, DrawingEnviroment.brushSize)
+
+    for (var i = 0; i < straightLineListPoints.length; i++) {
+      var x=straightLineListPoints[i].x
+      var y =straightLineListPoints[i].y
+      var fillSize=DrawingEnviroment.brushSize
+      ctx.fillStyle = rgbaToText(DrawingEnviroment.color)
+      ctx.fillRect(x, y, fillSize, fillSize)
     }
     //
-    socket.emit("MouseEvents", list);
+    socket.emit("MouseEvents", straightLineListPoints)
   }
 }
 //
-function CreatePalletDivs() {
-  PushColors(allColors)
-  var colorpallentTemp = document.getElementById("ColorPallet")
-  for (var i = 0; i < allColors.length; i++) {
-    let tempPallet = document.createElement("div");
-    colorpallentTemp.appendChild(tempPallet);
-    tempPallet.id = allColors[i].substring(1);
-    tempPallet.style.backgroundColor = "#" + tempPallet.id
-    $("#" + tempPallet.id).click((e) => {
-        if (BucketBool) {
-          BucketColor = hexToRGB("#" + e.target.id, 255)
-        }
-        if (BrushBool) {
-          color = hexToRGB("#" + e.target.id, 255)
-        }
-      }
-    )
-  }
-}
+
 
 $("#ColorInput").on("input",(e) => {
-  if (BucketBool) {
-    BucketColor = hexToRGB( e.target.value, 255)
+  DrawingEnviroment.color = hexToRGB(e.target.value, 255)
 
-  }
-  if (BrushBool) {
-    color = hexToRGB(e.target.value, 255)
-
-  }
 })
 
 $("body").mousemove(function (e) {
-  $("#" + socket.id + "-span").css("left", e.pageX - (CorrectionX - 15))
-  $("#" + socket.id + "-span").css("top", e.pageY - (CorrectionY - 15))
-  $("#" + socket.id + "-cursor").css("left", e.pageX - (CorrectionX + 18))
-  $("#" + socket.id + "-cursor").css("top", e.pageY - (CorrectionY + 12))
-  PreviousMouseX = mouseX;
-  PreviousMouseY = mouseY;
-  mouseX = e.pageX;
-  mouseY = e.pageY;
-  MouseEventsList.push({
-    x: e.pageX,
-    y: e.pageY,
-    lastx: PreviousMouseX,
-    lasty: PreviousMouseY
-  })
+  var mouse =DrawingEnviroment.mouse
+  $("#" + socket.id + "-span").css("left", e.pageX - (mouse.CorrectionX - 15))
+  $("#" + socket.id + "-span").css("top", e.pageY - (mouse.CorrectionY - 15))
+  $("#" + socket.id + "-cursor").css("left", e.pageX - (mouse.CorrectionX + 18))
+  $("#" + socket.id + "-cursor").css("top", e.pageY - (mouse.CorrectionY + 12))
+  DrawingEnviroment.mouse.previousX = mouse.x
+  DrawingEnviroment.mouse.previousY = mouse.y
+  mouse.x = e.pageX
+  mouse.y = e.pageY
+ 
 })
 
 $("#CommentBtn").click(function () {
   var commBox = document.getElementById("commentBox")
-  socket.emit('comment', "  " + Username + ": " + commBox.value + "\n")
-  var commentSpan = document.createElement('div');
-  var chat = document.getElementById("chatArea");
-  commentSpan.value = Username + ": " + commBox.value + '\n';
-  commentSpan.innerHTML = Username + ": " + commBox.value + '\n';
-  commBox.value = "";
+  socket.emit('comment', "  " + DrawingEnviroment.userName + ": " + commBox.value + "\n")
+  var commentSpan = document.createElement('div')
+  var chat = document.getElementById("chatArea")
+  commentSpan.value = DrawingEnviroment.userName + ": " + commBox.value + '\n'
+  commentSpan.innerHTML = DrawingEnviroment.userName + ": " + commBox.value + '\n'
+  commBox.value = ""
   commentSpan.classList = 'redSpan'
-  commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif;'
-  chat.value = chat.value + commentSpan.value;
+  commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
+  chat.value = chat.value + commentSpan.value
   if (ReturnChatCount() > ReturnChatLimit()) {
-    chat.innerHTML = '';
-    ChatCount_Set(0);
+    chat.innerHTML = ''
+    ChatCount_Set(0)
   }
-  chat.append(commentSpan);
+  chat.append(commentSpan)
   ChatCount_Inc()
 })
 document.querySelector("#commentBox").addEventListener("keydown", event => {
-  if (event.key !== "Enter") return;
-  document.querySelector("#CommentBtn").click();
-  event.preventDefault();
-});
+  if (event.key !== "Enter") return
+  document.querySelector("#CommentBtn").click()
+  event.preventDefault()
+})
 
 $("#NameBtn").click(function () {
   var NameBox = document.getElementById("NameBox")
-  NameBox.value = NameBox.value.trim();
-  if (!NamePicked && NameBox.value != "") {
+  NameBox.value = NameBox.value.trim()
+  if (!DrawingEnviroment.isNamePicked && NameBox.value != "") {
     var NameBox = document.getElementById("NameBox")
-    Username = NameBox.value
-    NamePicked = true;
-    Username = NameBox.value
-    document.getElementById(socket.id + "-span").innerHTML = Username
+    DrawingEnviroment.userName = NameBox.value
+    DrawingEnviroment.isNamePicked = true
+    DrawingEnviroment.userName = NameBox.value
+    document.getElementById(socket.id + "-span").innerHTML = DrawingEnviroment.userName
     socket.emit("NameChange", {
       id: socket.id + "-span",
-      Username: Username
+      Username: DrawingEnviroment.userName
     })
-    NameBox.value = "";
-    NameBox.setAttribute('readonly', 'readonly');
-    $("#PickANameWindow").css("animation", "MoveUp 0.7s");
-    $("#fullCanv").css("pointer-events", "auto");
-    $("#fullCanv").css("animation", " OpacityUp 1.2s");
+    NameBox.value = ""
+    NameBox.setAttribute('readonly', 'readonly')
+    $("#PickANameWindow").css("animation", "MoveUp 0.7s")
+    $("#fullCanv").css("pointer-events", "auto")
+    $("#fullCanv").css("animation", " OpacityUp 1.2s")
     $("#fullCanv").css("animation-fill-mode", "  forwards")
   }
 })
-setInterval(DrawCanv, 10);
+setInterval(drawAndEmitInterval, 10)
 
-function SendMoves(){
+function sendUsersMovments(){
   socket.emit("UserMoved", {
-    x: mouseX - CorrectionX,
-    y: mouseY - CorrectionY,
+    x: DrawingEnviroment.mouse.x - DrawingEnviroment.mouse.CorrectionX,
+    y: DrawingEnviroment.mouse.y - DrawingEnviroment.mouse.CorrectionY,
     id: socket.id + "-span",
     cursorid: socket.id + "-cursor",
-    Username: Username
+    Username: DrawingEnviroment.userName
   })
 }
-window.onkeydown = handleKeyDown;
+window.onkeydown = handleKeyDown
 /////////////////
 function handleKeyDown(event) {
-  if (event.key === "t" && NamePicked) {
-    var tempColor = ctx.getImageData(mouseX - CorrectionX, mouseY - CorrectionY, 1, 1).data;
-    if (!(mouseX - 9 > canvWidth || mouseY - 9 > canvHeight)) {
-      BoolFill = true;
-      CreatePath({
-        x: mouseX - CorrectionX,
-        y: mouseY - CorrectionY,
-        color: tempColor
-      }, ctx, color) //ctx.getImageData(mouseX, mouseY, 1, 1).data
-      socket.emit('fill', {
-        x: mouseX - CorrectionX,
-        y: mouseY - CorrectionY,
-        color: tempColor,
-        hostColor: color
-      })
-    }
+  if (event.key === "t") {
+    DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color,socket,DrawingEnviroment.isNamePicked,DrawingEnviroment,ctx)
   }
-
-
 }
