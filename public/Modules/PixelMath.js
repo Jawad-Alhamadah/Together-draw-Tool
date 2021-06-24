@@ -1,4 +1,4 @@
-function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
+function calcStraightLine(startCoordinates, endCoordinates, color, BrushSize) {
     var coordinatesArray = new Array()
     // Translate coordinates
     var x1 = startCoordinates.left
@@ -16,7 +16,7 @@ function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
         x: x1,
         y: y1,
         color: color,
-        BrushSize:BrushSize
+        BrushSize: BrushSize
     })
     // Main loop
     while (!((x1 == x2) && (y1 == y2))) {
@@ -34,7 +34,7 @@ function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
             x: x1,
             y: y1,
             color: color,
-            BrushSize:BrushSize
+            BrushSize: BrushSize
         })
     }
     // Return the result
@@ -49,12 +49,10 @@ function GetBoolIndex(x, y, canvWidth) {
 function GetBoolXY(index) {
     var y = index / canvWidth
     var x = index % canvWidth
-
     return {
         x: x,
         y: y
     }
-
 }
 
 module.exports = {

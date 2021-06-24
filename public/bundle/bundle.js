@@ -1,196 +1,10 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],2:[function(require,module,exports){
 (function (global){(function (){
 (function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(a,b,c){var d=new XMLHttpRequest;d.open("GET",a),d.responseType="blob",d.onload=function(){g(d.response,b,c)},d.onerror=function(){console.error("could not download file")},d.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.navigator&&/Macintosh/.test(navigator.userAgent)&&/AppleWebKit/.test(navigator.userAgent)&&!/Safari/.test(navigator.userAgent),g=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype&&!a?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(b,d,e,g){if(g=g||open("","_blank"),g&&(g.document.title=g.document.body.innerText="downloading..."),"string"==typeof b)return c(b,d,e);var h="application/octet-stream"===b.type,i=/constructor/i.test(f.HTMLElement)||f.safari,j=/CriOS\/[\d]+/.test(navigator.userAgent);if((j||h&&i||a)&&"undefined"!=typeof FileReader){var k=new FileReader;k.onloadend=function(){var a=k.result;a=j?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),g?g.location.href=a:location=a,g=null},k.readAsDataURL(b)}else{var l=f.URL||f.webkitURL,m=l.createObjectURL(b);g?g.location=m:location.href=m,g=null,setTimeout(function(){l.revokeObjectURL(m)},4E4)}});f.saveAs=g.saveAs=g,"undefined"!=typeof module&&(module.exports=g)});
 
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.6.0
  * https://jquery.com/
@@ -11073,69 +10887,67 @@ if ( typeof noGlobal === "undefined" ) {
 return jQuery;
 } );
 
-},{}],4:[function(require,module,exports){
-var {Tool}= require("./Tool")
+},{}],3:[function(require,module,exports){
+var {Tool} = require("./Tool")
 var $ = require("jquery");
-class Brush extends Tool{
-  constructor(iconSrc,iconDivId,isActive) {
-    super(iconSrc,iconDivId,isActive)
+class Brush extends Tool {
+  constructor(iconSrc, iconDivId, isActive, cursorIcon) {
+    super(iconSrc, iconDivId, isActive, cursorIcon)
   }
-  
- 
+
+
 }
 module.exports = {
   Brush
 }
-},{"./Tool":10,"jquery":3}],5:[function(require,module,exports){
+},{"./Tool":9,"jquery":2}],4:[function(require,module,exports){
 let Queue = require("../Queue.js")
-const {GetBoolIndex} = require("../PixelMath.js")
 const {setPixel,getColorOfPixel} = require("../PixelFunctions.js")
 const {Pixel} = require ("./Pixel.js")
 var {Tool}= require("./Tool")
 
 class Bucket extends Tool{
-  constructor(iconSrc,iconDivId,isActive) {
-  super(iconSrc,iconDivId,isActive)
+  constructor(iconSrc,iconDivId,isActive,cursorIcon) {
+  super(iconSrc,iconDivId,isActive,cursorIcon)
 
   }
-  useBucket(fillColor,socket,isNamePicked,DrawingEnviroment,ctx) {
+  useBucket(fillColor, socket, isNamePicked, DrawingEnviroment, ctx) {
     //Setup variables for eaiser to read If statments.
     var mouse = DrawingEnviroment.mouse
-    var width=DrawingEnviroment.canvWidth
-    var height=DrawingEnviroment.canvHeight
-    var isInsideWidth = mouse.x < width && mouse.x>0
-    var isInsideHeight = mouse.y < height && mouse.y>0
-    var isInsideDrawingArea= isInsideWidth && isInsideHeight
+    var width = DrawingEnviroment.canvWidth
+    var height = DrawingEnviroment.canvHeight
+    var isInsideWidth = mouse.x < width && mouse.x > 0
+    var isInsideHeight = mouse.y < height && mouse.y > 0
+    var isInsideDrawingArea = isInsideWidth && isInsideHeight
     if (isInsideDrawingArea && isNamePicked) {
-       var tempColor = ctx.getImageData(mouse.x - mouse.CorrectionX, mouse.y - mouse.CorrectionY, 1, 1).data
-       this.FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket,ctx)
+      var tempColor = ctx.getImageData(mouse.x - mouse.CorrectionX, mouse.y - mouse.CorrectionY, 1, 1).data
+      this.FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket, ctx)
     }
-}
+  }
 
-FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket,ctx) {
-   this.FillArea({
-        x: mouse.x - mouse.CorrectionX,
-        y: mouse.y - mouse.CorrectionY,
-        color: tempColor
-    }, ctx, fillColor)
-    socket.emit('fill', {
-        x: mouse.x - mouse.CorrectionX,
-        y: mouse.y - mouse.CorrectionY,
-        color: tempColor,
-        hostColor: fillColor
-    })
+FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket, ctx) {
+  this.FillArea({
+    x: mouse.x - mouse.CorrectionX,
+    y: mouse.y - mouse.CorrectionY,
+    color: tempColor
+  }, ctx, fillColor)
+  socket.emit('fill', {
+    x: mouse.x - mouse.CorrectionX,
+    y: mouse.y - mouse.CorrectionY,
+    color: tempColor,
+    hostColor: fillColor
+  })
 }
  CreatePath(startingPoint, ctx, fillColor) {
-   
    this.FillArea({
      x: startingPoint.x,
      y: startingPoint.y,
      color: startingPoint.color
-   }, ctx, fillColor,imageData)
+   }, ctx, fillColor, imageData)
  }
  FillArea(firstpoint, ctx, fillColor) {
    var imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
-   var isPixelCheckedList = []
+   var isPixelProcessedList = []
    var pointsQueue = new Queue()
    var backGroundColor = firstpoint.color
    var pixel
@@ -11143,71 +10955,71 @@ FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket,ctx) {
    var g
    var b
    var a
-   var width=ctx.canvas.width
+   var width = ctx.canvas.width
    r = fillColor[0]
    g = fillColor[1]
    b = fillColor[2]
    a = fillColor[3]
    backGroundColor = `rgba(${backGroundColor[0]},${backGroundColor[1]},${backGroundColor[2]},${backGroundColor[3]})`
-   pointsQueue.enqueue(new Pixel(firstpoint.x,firstpoint.y,width))
-   
+   pointsQueue.enqueue(new Pixel(firstpoint.x, firstpoint.y, width))
    while (pointsQueue.getLength() > 0) {
-     pixel = pointsQueue.dequeue(isPixelCheckedList)
+     pixel = pointsQueue.dequeue(isPixelProcessedList)
      setPixel(imageData, pixel.x, pixel.y, r, g, b, a)  
-     if (!pixel.isLeftPointProcessed(isPixelCheckedList)) {
-       var leftColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y)
-       if (backGroundColor === leftColor) {
-           isPixelCheckedList[pixel.leftIndex] = true
-           pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y,width))
-         }
-     }
-     if (!pixel.isBottomLeftPointProcessed(isPixelCheckedList)) {
-       var bottomLeftColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y + 1)
-       if (backGroundColor === bottomLeftColor ) {
-           isPixelCheckedList[pixel.bottomLeftIndex] = true
-           pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y + 1,width))
+    
+     if (!pixel.isLeftPointProcessed(isPixelProcessedList)) {
+      var leftPixelColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y)
+      if (backGroundColor === leftPixelColor) {
+        isPixelProcessedList[pixel.leftIndex] = true
+        pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y, width))
+      }
+    }
+     if (!pixel.isBottomLeftPointProcessed(isPixelProcessedList)) {
+       var bottomLeftPixelColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y + 1)
+       if (backGroundColor === bottomLeftPixelColor) {
+         isPixelProcessedList[pixel.bottomLeftIndex] = true
+         pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y + 1, width))
        }
-     }  
-     if (!pixel.isTopPointProcessed(isPixelCheckedList)) {
-       var topColor = getColorOfPixel(imageData, pixel.x, pixel.y - 1)
-       if (backGroundColor === topColor ) {
-           isPixelCheckedList[pixel.topIndex] = true
-           pointsQueue.enqueue(new Pixel(pixel.x, pixel.y - 1,width))
-         }
      }
-     if (!pixel.isTopRightPointProcessed(isPixelCheckedList)) {
-       var topRightColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y - 1)
-       if (backGroundColor === topRightColor ) {
-           isPixelCheckedList[pixel.topRightIndex] = true
-           pointsQueue.enqueue(new Pixel(pixel.x + 1, pixel.y - 1,width))
-         }
+     if (!pixel.isTopPointProcessed(isPixelProcessedList)) {
+       var topPixelColor = getColorOfPixel(imageData, pixel.x, pixel.y - 1)
+       if (backGroundColor === topPixelColor) {
+         isPixelProcessedList[pixel.topIndex] = true
+         pointsQueue.enqueue(new Pixel(pixel.x, pixel.y - 1, width))
+       }
      }
-     if (!pixel.isTopLeftPointProcessed(isPixelCheckedList)) {
-       var topLeftColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y - 1)
-       if (backGroundColor === topLeftColor ) {
-           isPixelCheckedList[pixel.topLeftIndex] = true
-           pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y - 1,width))
-         }
+     if (!pixel.isTopRightPointProcessed(isPixelProcessedList)) {
+       var topRightPixelColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y - 1)
+       if (backGroundColor === topRightPixelColor) {
+         isPixelProcessedList[pixel.topRightIndex] = true
+         pointsQueue.enqueue(new Pixel(pixel.x + 1, pixel.y - 1, width))
+       }
      }
-     if (!pixel.isBottomPointProcessed(isPixelCheckedList)) {
-       var bottomColor = getColorOfPixel(imageData, pixel.x, pixel.y + 1)
-       if (backGroundColor === bottomColor ) {
-           isPixelCheckedList[pixel.bottomIndex] = true
-           pointsQueue.enqueue(new Pixel(pixel.x, pixel.y + 1,width))
-           }
+     if (!pixel.isTopLeftPointProcessed(isPixelProcessedList)) {
+       var topLeftPixelColor = getColorOfPixel(imageData, pixel.x - 1, pixel.y - 1)
+       if (backGroundColor === topLeftPixelColor) {
+         isPixelProcessedList[pixel.topLeftIndex] = true
+         pointsQueue.enqueue(new Pixel(pixel.x - 1, pixel.y - 1, width))
+       }
      }
-     if (!pixel.isBottomRightPointProcessed(isPixelCheckedList)) {
-       var bottomRightColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y + 1)
-       if (backGroundColor === bottomRightColor ) {
-           isPixelCheckedList[pixel.bottomRightIndex] = true
-           pointsQueue.enqueue(new Pixel(pixel.x + 1,pixel.y + 1,width))
-         }
+     if (!pixel.isBottomPointProcessed(isPixelProcessedList)) {
+       var bottomPixelColor = getColorOfPixel(imageData, pixel.x, pixel.y + 1)
+       if (backGroundColor === bottomPixelColor) {
+         isPixelProcessedList[pixel.bottomIndex] = true
+         pointsQueue.enqueue(new Pixel(pixel.x, pixel.y + 1, width))
+       }
+     }
+     if (!pixel.isBottomRightPointProcessed(isPixelProcessedList)) {
+       var bottomRightPixelColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y + 1)
+       if (backGroundColor === bottomRightPixelColor) {
+         isPixelProcessedList[pixel.bottomRightIndex] = true
+         pointsQueue.enqueue(new Pixel(pixel.x + 1, pixel.y + 1, width))
+       }
      }
 
-     if (!pixel.isRightPointProcessed(isPixelCheckedList)) {
-       var rightColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y)
-       if (backGroundColor === rightColor ) {
-           isPixelCheckedList[pixel.rightIndex] = true
+     if (!pixel.isRightPointProcessed(isPixelProcessedList)) {
+       var rightPixelColor = getColorOfPixel(imageData, pixel.x + 1, pixel.y)
+       if (backGroundColor === rightPixelColor ) {
+           isPixelProcessedList[pixel.rightIndex] = true
            pointsQueue.enqueue(new Pixel(pixel.x + 1, pixel.y,width))
        }
      }
@@ -11219,64 +11031,60 @@ FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket,ctx) {
 module.exports = {
   Bucket
 }
-},{"../PixelFunctions.js":14,"../PixelMath.js":15,"../Queue.js":16,"./Pixel.js":9,"./Tool":10}],6:[function(require,module,exports){
+},{"../PixelFunctions.js":12,"../Queue.js":14,"./Pixel.js":8,"./Tool":9}],5:[function(require,module,exports){
 var $ = require("jquery")
 var {Tool}= require("./Tool")
 class ColorPicker extends Tool {
-  constructor(iconSrc,iconDivId,isActive) {
-    super(iconSrc,iconDivId,isActive)
-  
-    }
+  constructor(iconSrc, iconDivId, isActive, cursorIcon) {
+    super(iconSrc, iconDivId, isActive, cursorIcon)
+
+  }
 }
 module.exports = {
   ColorPicker
 }
-},{"./Tool":10,"jquery":3}],7:[function(require,module,exports){
+},{"./Tool":9,"jquery":2}],6:[function(require,module,exports){
 var {Tool}= require("./Tool")
 var $ = require("jquery");
 const {hexToRGB} = require("../PixelFunctions.js")
-class Eraser extends Tool{
-  constructor(iconSrc,iconDivId,isActive) {
-    super(iconSrc,iconDivId,isActive)
+class Eraser extends Tool {
+  constructor(iconSrc, iconDivId, isActive, cursorIcon) {
+    super(iconSrc, iconDivId, isActive, cursorIcon)
   }
-  activationSetUp(event,DrawingEnviroment){
-    var white=hexToRGB("#ffffff", 255)
-    DrawingEnviroment.savedColor=DrawingEnviroment.color
+  activationSetUp(DrawingEnviroment) {
+    var white = hexToRGB("#ffffff", 255)
+    DrawingEnviroment.savedColor = DrawingEnviroment.color
     DrawingEnviroment.setBrushColor(white)
+    $("#ColorInput").value = DrawingEnviroment.savedColor
     $("#Image_2").attr("src", this.cursorIcon)
     $("#toolsDiv ").children().css("opacity", "100%")
-    $(event.target).css("opacity", "30%")
+    $("#" + this.iconDivId).css("opacity", "30%")
   }
 }
 module.exports = {
   Eraser
 }
-},{"../PixelFunctions.js":14,"./Tool":10,"jquery":3}],8:[function(require,module,exports){
+},{"../PixelFunctions.js":12,"./Tool":9,"jquery":2}],7:[function(require,module,exports){
 class Mouse {
-    constructor(mouseX,mouseY,CorrectionX,CorrectionY) {
-        this.x=mouseX;
-        this.y=mouseY;
-        this.previousX=mouseX;
-        this.previousX=mouseY;
-        this.isDown=false;
-        this.CorrectionX=CorrectionX
-        this.CorrectionY=CorrectionY
-          }
-    decativateOtherPaintingTools() {  }
-    method_2() {  }
-    method_3() {  }
+  constructor(mouseX, mouseY, CorrectionX, CorrectionY) {
+    this.x = mouseX;
+    this.y = mouseY;
+    this.previousX = mouseX;
+    this.previousX = mouseY;
+    this.isDown = false;
+    this.CorrectionX = CorrectionX
+    this.CorrectionY = CorrectionY
   }
+}
 
-  module.exports = {
-    Mouse
-  }
-},{}],9:[function(require,module,exports){
-const {
-    GetBoolIndex
-} = require("../PixelMath.js");
+module.exports = {
+  Mouse
+}
+},{}],8:[function(require,module,exports){
+const {GetBoolIndex} = require("../PixelMath.js");
 var $ = require("jquery");
 class Pixel {
-    constructor(x, y,width) {
+    constructor(x, y, width) {
         this.x = x
         this.y = y
         this.leftIndex = GetBoolIndex(x - 1, y, width)
@@ -11287,44 +11095,44 @@ class Pixel {
         this.bottomIndex = GetBoolIndex(x, y + 1, width)
         this.bottomRightIndex = GetBoolIndex(x + 1, y + 1, width)
         this.rightIndex = GetBoolIndex(x + 1, y, width)
-        
+
     }
-    isLeftPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.leftIndex]
-    isBottomLeftPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.bottomLeftIndex]
-    isTopPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.topIndex]
-    isTopRightPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.topRightIndex]
-    isTopLeftPointProcessed= (isPixelCheckedList)=> isPixelCheckedList[this.topLeftIndex]
-    isBottomPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.bottomIndex]
-    isBottomRightPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.bottomRightIndex]
-    isRightPointProcessed = (isPixelCheckedList)=> isPixelCheckedList[this.rightIndex]
+    isLeftPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.leftIndex]
+    isBottomLeftPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.bottomLeftIndex]
+    isTopPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.topIndex]
+    isTopRightPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.topRightIndex]
+    isTopLeftPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.topLeftIndex]
+    isBottomPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.bottomIndex]
+    isBottomRightPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.bottomRightIndex]
+    isRightPointProcessed = (isPixelCheckedList) => isPixelCheckedList[this.rightIndex]
 }
 module.exports = {
     Pixel
 }
-},{"../PixelMath.js":15,"jquery":3}],10:[function(require,module,exports){
+},{"../PixelMath.js":13,"jquery":2}],9:[function(require,module,exports){
 var $ = require("jquery");
 
 class Tool {
-  constructor(iconSrc,iconDivId,isActive,cursorIcon) {
+  constructor(iconSrc, iconDivId, isActive, cursorIcon) {
     this.isActive = isActive
-    this.iconSrc=iconSrc
-    this.iconDivId=iconDivId
-    this.cursorIcon=cursorIcon
+    this.iconSrc = iconSrc
+    this.iconDivId = iconDivId
+    this.cursorIcon = cursorIcon
     this.setIcon()
   }
-  activationSetUp(event,DrawingEnviroment){
+  activationSetUp(DrawingEnviroment) {
     DrawingEnviroment.setBrushColor(DrawingEnviroment.savedColor)
+    $("#ColorInput").value = DrawingEnviroment.savedColor
     $("#Image_2").attr("src", this.cursorIcon)
-    $("#toolsDiv ").children().css("opacity", "100%")
-    $(event.target).css("opacity", "30%")
+    $("#toolsDiv").children().css("opacity", "100%")
+    $("#" + this.iconDivId).css("opacity", "30%")
   }
-    
-  setIcon = ()=>$("#"+this.iconDivId).css("background-image", `url(${this.iconSrc})`)
+  setIcon = () => $("#" + this.iconDivId).css("background-image", `url(${this.iconSrc})`)
 }
 module.exports = {
-    Tool
+  Tool
 }
-},{"jquery":3}],11:[function(require,module,exports){
+},{"jquery":2}],10:[function(require,module,exports){
 
 const {Bucket} = require("./Bucket")
 const {Eraser} = require("./Eraser")
@@ -11333,82 +11141,82 @@ const {Brush} = require("./Brush")
   
 class Tools {
     constructor() {
-        this.brush=new Brush('BrushTool.png','BrushTool',true,"")
-        this.bucket=new Bucket('paint-bucket-4.png','BucketTool',false,"paint-bucket-4.png")
-        this.eraser=new Eraser('eraser.png','EraserTool',false,"")
-        this.colorPicker=new ColorPicker('color-picker.png','ColorPickerTool',false,"dropper.png")
-          }
-    activateBrush(event,DrawingEnviroment) {
-        this.brush.isActive       = true
-        this.eraser.isActive      = false
-        this.colorPicker.isActive = false
-        this.bucket.isActive      = false
-        this.brush.activationSetUp(event,DrawingEnviroment)
+        this.brush = new Brush('BrushTool-2.png', 'BrushTool', true, "")
+        this.bucket = new Bucket('paint-bucket-4.png', 'BucketTool', false, "paint-bucket-4.png")
+        this.eraser = new Eraser('eraser.png', 'EraserTool', false, "")
+        this.colorPicker = new ColorPicker('color-picker.png', 'ColorPickerTool', false, "dropper.png")
     }
-    activateEraser(event,DrawingEnviroment) {
-        this.eraser.isActive      = true 
-        this.brush.isActive       = false
+    activateBrush(DrawingEnviroment) {
+        this.brush.isActive = true
+        this.eraser.isActive = false
         this.colorPicker.isActive = false
-        this.bucket.isActive      = false
-        this.eraser.activationSetUp(event,DrawingEnviroment)
-       
+        this.bucket.isActive = false
+        this.brush.activationSetUp(DrawingEnviroment)
     }
-    activateColorPicker(event,DrawingEnviroment) {
+    activateEraser(DrawingEnviroment) {
+        this.eraser.isActive = true
+        this.brush.isActive = false
+        this.colorPicker.isActive = false
+        this.bucket.isActive = false
+        this.eraser.activationSetUp(DrawingEnviroment)
+
+    }
+    activateColorPicker(DrawingEnviroment) {
         this.colorPicker.isActive = true
-        this.brush.isActive       = false
-        this.eraser.isActive      = false
-        this.bucket.isActive      = false
-        this.colorPicker.activationSetUp(event,DrawingEnviroment)
+        this.brush.isActive = false
+        this.eraser.isActive = false
+        this.bucket.isActive = false
+        this.colorPicker.activationSetUp(DrawingEnviroment)
     }
-    activateBucket(event,DrawingEnviroment) {
-        this.bucket.isActive      = true
-        this.brush.isActive       = false
-        this.eraser.isActive      = false
-        this.colorPicker.isActive = false  
-        this.bucket.activationSetUp(event,DrawingEnviroment)
+    activateBucket(DrawingEnviroment) {
+        this.bucket.isActive = true
+        this.brush.isActive = false
+        this.eraser.isActive = false
+        this.colorPicker.isActive = false
+        this.bucket.activationSetUp(DrawingEnviroment)
     }
-     
-  }
-  module.exports = {
+
+}
+module.exports = {
     Tools
-  }
-},{"./Brush":4,"./Bucket":5,"./ColorPicker":6,"./Eraser":7}],12:[function(require,module,exports){
+}
+},{"./Brush":3,"./Bucket":4,"./ColorPicker":5,"./Eraser":6}],11:[function(require,module,exports){
  const {hexToRGB} = require("./PixelFunctions")
  let {Mouse} = require("./Classes/Mouse")
  let {Tools} = require("./Classes/Tools")
 
  var $ = require("jquery")
  class DrawingEnviroment {
-     constructor(canvWidth, canvHeight, mouseX, mouseY, userName, color,correctionX,correctionY) {
-         this.mouse = new Mouse(mouseX, mouseY,correctionX,correctionY)
-         this.tools = new Tools()
-         this.isNamePicked = false
-         this.canvWidth = canvWidth
-         this.canvHeight = canvHeight
-         this.userName = userName
-         this.color = hexToRGB(color, 255)
-         this.savedColor=hexToRGB(color, 255)
-         this.brushSize = 2
-         this.palletColorsList=[]
-         this.brushSizeUpperLimit=6
-         this.brushSizeLowerLimit=2
-         this.chatLimit=20
-         this.chatCounter=0
-         
-     }
+   constructor(canvWidth, canvHeight, mouseX, mouseY, userName, color, correctionX, correctionY) {
+     this.mouse = new Mouse(mouseX, mouseY, correctionX, correctionY)
+     this.tools = new Tools()
+     this.isNamePicked = false
+     this.canvWidth = canvWidth
+     this.canvHeight = canvHeight
+     this.userName = userName
+     this.color = hexToRGB(color, 255)
+     this.savedColor = hexToRGB(color, 255)
+     this.brushSize = 2
+     this.palletColorsList = []
+     this.brushSizeUpperLimit = 6
+     this.brushSizeLowerLimit = 2
+     this.chatLimit = 18
+     this.chatCounter = 0
 
-     fillWithWhite(ctx) {
-         ctx.canvas.width = 1094
-         ctx.canvas.height = 500
-         ctx.strokeRect(20, 20, 1040, 445)
-         ctx.fillStyle = "white"
-         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-         ctx.fillStyle = "black"
-     }
-     CreatePalletDivs() {
-         this.PushColors(this.palletColorsList)
-         for (var i = 0; i < this.palletColorsList.length; i++) this.createIndividualColorPalletDiv(this.palletColorsList,i) 
-     }
+   }
+
+   fillWithWhite(ctx) {
+     ctx.canvas.width = 1094
+     ctx.canvas.height = 500
+     ctx.strokeRect(20, 20, 1040, 445)
+     ctx.fillStyle = "white"
+     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+     ctx.fillStyle = "black"
+   }
+   CreatePalletDivs() {
+     this.PushColors(this.palletColorsList)
+     for (var i = 0; i < this.palletColorsList.length; i++) this.createIndividualColorPalletDiv(this.palletColorsList, i)
+   }
 
     PushColors(col){
         col.push('#000000');col.push('#FFFFFF');col.push('#999900');col.push('#4C9900');col.push('#004C99');
@@ -11428,31 +11236,77 @@ class Tools {
         col.push('#E67D4E');col.push('#F0E216');col.push('#D68715');
       }
     
-    createIndividualColorPalletDiv(palletColorsList,i) {
-        var colorpallentTemp = document.getElementById("ColorPallet")
-        let tempPallet = document.createElement("div")
-        colorpallentTemp.appendChild(tempPallet)
-        tempPallet.id = palletColorsList[i].substring(1)
-        tempPallet.style.backgroundColor = "#" + tempPallet.id
-        $("#" + tempPallet.id).click((e) => this.setBrushColor(hexToRGB("#" + e.target.id, 255)))
+    createIndividualColorPalletDiv(palletColorsList, i) {
+      var colorpallentTemp = document.getElementById("ColorPallet")
+      let tempPallet = document.createElement("div")
+      colorpallentTemp.appendChild(tempPallet)
+      tempPallet.id = palletColorsList[i].substring(1)
+      tempPallet.style.backgroundColor = "#" + tempPallet.id
+      $("#" + tempPallet.id).click((event) => {
+        var color = (hexToRGB("#" + event.target.id, 255))
+        this.setBrushColor(color)
+        this.savedColor = color
+        $("#ColorInput").val("#" + event.target.id)
+      }) //
     }
-    setBrushColor = (desiredColor)=> this.color= desiredColor
-    
- }
- module.exports = {
-     DrawingEnviroment
- }
-},{"./Classes/Mouse":8,"./Classes/Tools":11,"./PixelFunctions":14,"jquery":3}],13:[function(require,module,exports){
 
+    makeAComment(comment, spanClass) {
+      var commentSpan = document.createElement('div')
+      var chat = document.getElementById("chatArea")
+      commentSpan.innerHTML = comment
+      commentSpan.classList = spanClass
+      commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
+      this.chatCounter++;
+      if (this.chatCounter > this.chatLimit) {
+        chat.innerHTML = ''
+        this.chatCounter = 0
+      }
+      chat.append(commentSpan)
+    }
 
+    crossHairFollowMouse(socket, event) {
+      var mouse = this.mouse
+      $("#" + socket.id + "-span").css("left", event.pageX - (mouse.CorrectionX - 15))
+      $("#" + socket.id + "-span").css("top", event.pageY - (mouse.CorrectionY - 15))
+      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 18))
+      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 12))
+      this.mouse.previousX = mouse.x
+      this.mouse.previousY = mouse.y
+      mouse.x = event.pageX
+      mouse.y = event.pageY
+    }
+    changeName() {
+      var NameBox = document.getElementById("NameBox")
+      this.userName = NameBox.value
+      this.isNamePicked = true
+      NameBox.value = ""
+      NameBox.setAttribute('readonly', 'readonly')
+      this.removeNameWindow()
+    }
+    removeNameWindow() {
+      $("#PickANameWindow").css("animation", "MoveUp 0.7s")
+      $("#fullCanv").css("pointer-events", "auto")
+      $("#fullCanv").css("animation", " OpacityUp 1.2s")
+      $("#fullCanv").css("animation-fill-mode", "  forwards")
+    }
+    iconFollowMouse(socket, event) {
+      var mouse = this.mouse
+      $("#" + socket.id + "-span").css("left", event.pageX - (mouse.CorrectionX - 15))
+      $("#" + socket.id + "-span").css("top", event.pageY - (mouse.CorrectionY - 15))
+      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 18))
+      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 12))
+      this.mouse.previousX = mouse.x
+      this.mouse.previousY = mouse.y
+      mouse.x = event.pageX
+      mouse.y = event.pageY
+    }
+    setBrushColor = (desiredColor) => this.color = desiredColor
+    }
+module.exports = {
+   DrawingEnviroment
+}
 
-
- 
- module.exports = {
-
- }
-},{}],14:[function(require,module,exports){
-(function (process){(function (){
+},{"./Classes/Mouse":7,"./Classes/Tools":10,"./PixelFunctions":12,"jquery":2}],12:[function(require,module,exports){
 function setPixel(imageData, x, y, r, g, b, a) {
   index = (x + y * imageData.width) * 4
   imageData.data[index + 0] = r
@@ -11483,38 +11337,33 @@ function hexToRGB(hex, alpha) {
   }
 }
 
-function getColorOfPixel(imageData,x,y){
-  var rgba= getPixel(imageData,x,y)
+function getColorOfPixel(imageData, x, y) {
+  var rgba = getPixel(imageData, x, y)
   return `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
 }
 
-function rgbaToHex(rgba) {
-  var inParts = rgba.substring(rgba.indexOf("(")).split(","),
-    r = parseInt(trim(inParts[0].substring(1)), 10),
-    g = parseInt(trim(inParts[1]), 10),
-    b = parseInt(trim(inParts[2]), 10),
-    a = parseFloat(trim(inParts[3].substring(0, inParts[3].length - 1))).toFixed(2)
-  var outParts = [
-    r.toString(16),
-    g.toString(16),
-    b.toString(16),
-    Math.round(a * 255).toString(16).substring(0, 2)
-  ]
+function RGBToHex(rgba) {
+  var r, g, b, a;
 
-  // Pad single-digit output values
-  outParts.forEach(function (part, i) {
-    if (part.length === 1) {
-      outParts[i] = '0' + part
-    }
-  })
+  r = rgba[0]
+  g = rgba[1]
+  b = rgba[2]
+  a = rgba[3]
+  r = r.toString(16);
+  g = g.toString(16);
+  b = b.toString(16);
+  a = Math.round(a * 255).toString(16);
 
-  return ('#' + outParts.join(''))
-}
+  if (r.length == 1)
+    r = "0" + r;
+  if (g.length == 1)
+    g = "0" + g;
+  if (b.length == 1)
+    b = "0" + b;
+  if (a.length == 1)
+    a = "0" + a;
 
-if (process.argv.length >= 3) {
-  console.log(rgbaToHex(process.argv[2]))
-} else {
-
+  return "#" + r + g + b;
 }
 
 
@@ -11523,12 +11372,11 @@ module.exports = {
   rgbaToText,
   hexToRGB,
   setPixel,
-  rgbaToHex,
+  RGBToHex,
   getColorOfPixel
 }
-}).call(this)}).call(this,require('_process'))
-},{"_process":1}],15:[function(require,module,exports){
-function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
+},{}],13:[function(require,module,exports){
+function calcStraightLine(startCoordinates, endCoordinates, color, BrushSize) {
     var coordinatesArray = new Array()
     // Translate coordinates
     var x1 = startCoordinates.left
@@ -11546,7 +11394,7 @@ function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
         x: x1,
         y: y1,
         color: color,
-        BrushSize:BrushSize
+        BrushSize: BrushSize
     })
     // Main loop
     while (!((x1 == x2) && (y1 == y2))) {
@@ -11564,7 +11412,7 @@ function calcStraightLine(startCoordinates, endCoordinates, color,BrushSize) {
             x: x1,
             y: y1,
             color: color,
-            BrushSize:BrushSize
+            BrushSize: BrushSize
         })
     }
     // Return the result
@@ -11579,12 +11427,10 @@ function GetBoolIndex(x, y, canvWidth) {
 function GetBoolXY(index) {
     var y = index / canvWidth
     var x = index % canvWidth
-
     return {
         x: x,
         y: y
     }
-
 }
 
 module.exports = {
@@ -11592,7 +11438,7 @@ module.exports = {
     GetBoolXY,
     calcStraightLine
 }
-},{}],16:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 ////////////
 function Queue(){
 
@@ -11608,7 +11454,7 @@ function Queue(){
       this.peek=function(){return 0<a.length?a[b]:void 0}
   }
 module.exports=Queue
-},{}],17:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 
 const {Socket_DrawEvents_Recieved,
        Socket_MouseEvents_Recieved,
@@ -11655,6 +11501,7 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
    
     DrawingEnviroment.fillWithWhite(ctx)
     DrawingEnviroment.CreatePalletDivs()
+    DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
     addClickEvents(DrawingEnviroment)
     UserNameAndCursorDivsSetup(socket, userName)
     Socket_DrawEvents_Recieved(ctx, color, socket,DrawingEnviroment)
@@ -11663,7 +11510,7 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
     Socket_NewUser_Recieved(socket)
     Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment)
     Socket_NameChangeEvent_Recieved(socket)
-    Socket_CommentEvent_Recieved(socket)
+    Socket_CommentEvent_Recieved(socket,DrawingEnviroment)
   }
 
   function addClickEvents(DrawingEnviroment) {
@@ -11680,39 +11527,34 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
     })
     $("#EraserTool").click((event) => {
       if (!DrawingEnviroment.tools.eraser.isActive) {
-        DrawingEnviroment.tools.activateEraser(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateEraser(DrawingEnviroment)
       }
   
     })
     $("#BrushTool").click((event) => {
       if (!DrawingEnviroment.tools.brush.isActive) {
-        DrawingEnviroment.tools.activateBrush(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
       }
     })
   
     $("#ColorPickerTool").click((event) => {
       if (!DrawingEnviroment.tools.colorPicker.isActive) {
-        DrawingEnviroment.tools.activateColorPicker(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateColorPicker(DrawingEnviroment)
       }
     })
   
     $("#BucketTool").click((event) => {
       if (!DrawingEnviroment.tools.bucket.isActive) {
-        DrawingEnviroment.tools.activateBucket(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateBucket(DrawingEnviroment)
       }
     })
   }
-  
-
- 
 
 module.exports = {
-
     UserNameAndCursorDivsSetup,RandomizeChatIcon,setUpInitialEnviroment,addClickEvents
 }
-},{"./SocketOnFunctions.js":18,"jquery":3}],18:[function(require,module,exports){
+},{"./SocketOnFunctions.js":16,"jquery":2}],16:[function(require,module,exports){
 const {rgbaToText} = require("./PixelFunctions.js")
-const {CreatePath} = require("./FillToolFunctions.js")
 var $ = require("jquery")
 
 function Socket_DrawEvents_Recieved(ctx,color,socket,DrawingEnviroment){
@@ -11848,23 +11690,8 @@ function Socket_NameChangeEvent_Recieved(socket){
       })
 }
 
-function Socket_CommentEvent_Recieved(socket){
-   
-    socket.on('comment', function (data) { 
-        var chat = document.getElementById("chatArea")
-        var RecievedCommentSpan = document.createElement('div')
-        RecievedCommentSpan.classList = "blueSpan"
-        RecievedCommentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
-        RecievedCommentSpan.value = "  " + data + "\n"
-        RecievedCommentSpan.innerHTML = " \n" + data
-        if (chatCounter > chatLimit) {
-          chatCounter = 0
-          chat.innerHTML = ''
-        }
-        chatCounter++
-        chat.append(RecievedCommentSpan)
-      
-      })
+function Socket_CommentEvent_Recieved(socket,DrawingEnviroment){
+    socket.on('comment', (data) => DrawingEnviroment.makeAComment(`${data} \n`, "blueSpan"))
 }
 
 function ReturnChatCount(){ return chatCounter}
@@ -11879,7 +11706,7 @@ module.exports = {
     ChatCount_Inc,ChatCount_Set
    
 }
-},{"./FillToolFunctions.js":13,"./PixelFunctions.js":14,"jquery":3}],19:[function(require,module,exports){
+},{"./PixelFunctions.js":12,"jquery":2}],17:[function(require,module,exports){
 //the Nodemon run script
 //nodemon --exec npm start --ignore 'public/bundle/*'  
 
@@ -11899,59 +11726,74 @@ var BackgroundIcon_3="painting-3.png"
 var $ = require("jquery")
 let {saveAs} = require('file-saver')
 const {calcStraightLine} = require("../Modules/PixelMath.js")
-const {rgbaToText,hexToRGB} = require("../Modules/PixelFunctions.js")
+const {rgbaToText,hexToRGB, RGBToHex} = require("../Modules/PixelFunctions.js")
 const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFunctions.js")
-const {ReturnChatCount,ReturnChatLimit,ChatCount_Set,ChatCount_Inc}=require("../Modules/SocketOnFunctions.js")
 const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 
 //https://together-draw-stuff.herokuapp.com
 //http://localhost:3000
-var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
+var socket = io.connect('http://localhost:3000', {
   transports: ['websocket']
 })
+
+var setup={
+  canvWidth:1094,
+  canvHeight:500,
+  correctionX:120,
+  correctionY:19,
+  initialName:"anon",
+  initialColor:"#000000",
+  initialMouseX:0,
+  initialMouseY:0
+}
 var canvas = document.getElementById('Canvas')
 var ctx = canvas.getContext('2d')
-var canvWidth = 1094
-var canvHeight = 500
-ctx.canvas.width=canvWidth
-ctx.canvas.height=canvHeight
-var CorrectionX = 120
-var CorrectionY = 19
-
-let DrawingEnviroment=new DrawingEnv.DrawingEnviroment(canvWidth,canvHeight,0,0,"anon","#000000",CorrectionX,CorrectionY)
+ctx.canvas.width = setup.canvWidth
+ctx.canvas.height = setup.canvHeight
+var DrawingEnviroment = new DrawingEnv.DrawingEnviroment(
+  setup.canvWidth,
+  setup.canvHeight,
+  setup.initialMouseX,
+  setup.initialMouseY,
+  setup.initialName,
+  setup.initialColor,
+  setup.correctionX,
+  setup.correctionY)
 
 socket.on('connect', () => {
-  RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3)
-  setUpInitialEnviroment(ctx,socket,DrawingEnviroment.color,DrawingEnviroment.userName,DrawingEnviroment)
-  setInterval(sendUsersMovments,30)
-  
-  })
-
+  RandomizeChatIcon(BackgroundIcon_1, BackgroundIcon_3)
+  setUpInitialEnviroment(ctx, socket, DrawingEnviroment.color, DrawingEnviroment.userName, DrawingEnviroment)
+  setInterval(sendUsersMovments, 20)
+  setInterval(drawAndEmitInterval, 10)
+  window.onkeydown = handleKeyDown
+})
 
 canvas.addEventListener('mousedown', function (event) {
-  var isEventALeftClick=event.which==1
-  if(isEventALeftClick){
+  var isEventALeftClick = event.which == 1
+  if (isEventALeftClick) {
     DrawingEnviroment.mouse.isDown = true
     if (DrawingEnviroment.tools.bucket.isActive) {
-      DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color,socket,DrawingEnviroment.isNamePicked,DrawingEnviroment,ctx)
+      DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color, socket, DrawingEnviroment.isNamePicked, DrawingEnviroment, ctx)
     }
-    if(DrawingEnviroment.tools.colorPicker.isActive){
-     var pickedColor=ctx.getImageData(DrawingEnviroment.mouse.x - DrawingEnviroment.mouse.CorrectionX, DrawingEnviroment.mouse.y - DrawingEnviroment.mouse.CorrectionY, 1, 1).data
-     DrawingEnviroment.setBrushColor(pickedColor)
+    if (DrawingEnviroment.tools.colorPicker.isActive) {
+      var mouse = DrawingEnviroment.mouse
+      var pickedColor = ctx.getImageData(mouse.x - mouse.CorrectionX, mouse.y - mouse.CorrectionY, 1, 1).data
+      DrawingEnviroment.setBrushColor(pickedColor)
+      DrawingEnviroment.savedColor = pickedColor
+      //val function needs hex
+      var colorInHex = RGBToHex(pickedColor)
+      $("#ColorInput").val(colorInHex)
     }
   }
 })
-///
-
 canvas.addEventListener('mouseup', function () {
   DrawingEnviroment.mouse.isDown = false
 })
 
-
 function drawAndEmitInterval() {
-  var mouse=DrawingEnviroment.mouse
-  var eraser=DrawingEnviroment.tools.eraser
-  var brush=DrawingEnviroment.tools.brush
+  var mouse = DrawingEnviroment.mouse
+  var eraser = DrawingEnviroment.tools.eraser
+  var brush = DrawingEnviroment.tools.brush
   if (mouse.isDown && (brush.isActive || eraser.isActive)) {
     var straightLineListPoints = calcStraightLine({
       left: mouse.x - mouse.CorrectionX,
@@ -11962,9 +11804,9 @@ function drawAndEmitInterval() {
     }, DrawingEnviroment.color, DrawingEnviroment.brushSize)
 
     for (var i = 0; i < straightLineListPoints.length; i++) {
-      var x=straightLineListPoints[i].x
-      var y =straightLineListPoints[i].y
-      var fillSize=DrawingEnviroment.brushSize
+      var x = straightLineListPoints[i].x
+      var y = straightLineListPoints[i].y
+      var fillSize = DrawingEnviroment.brushSize
       ctx.fillStyle = rgbaToText(DrawingEnviroment.color)
       ctx.fillRect(x, y, fillSize, fillSize)
     }
@@ -11972,44 +11814,25 @@ function drawAndEmitInterval() {
     socket.emit("MouseEvents", straightLineListPoints)
   }
 }
-//
 
-
-$("#ColorInput").on("input",(e) => {
-  DrawingEnviroment.color = hexToRGB(e.target.value, 255)
+$("#ColorInput").on("input",(event) => {
+  DrawingEnviroment.setBrushColor(hexToRGB(event.target.value, 255))
+  DrawingEnviroment.savedColor = hexToRGB(event.target.value, 255)
+  //the Eraser sets the color to white. We need to set the tool to brush to avoid painting color with an eraser.
+  if (DrawingEnviroment.tools.eraser.isActive) DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
 
 })
 
-$("body").mousemove(function (e) {
-  var mouse =DrawingEnviroment.mouse
-  $("#" + socket.id + "-span").css("left", e.pageX - (mouse.CorrectionX - 15))
-  $("#" + socket.id + "-span").css("top", e.pageY - (mouse.CorrectionY - 15))
-  $("#" + socket.id + "-cursor").css("left", e.pageX - (mouse.CorrectionX + 18))
-  $("#" + socket.id + "-cursor").css("top", e.pageY - (mouse.CorrectionY + 12))
-  DrawingEnviroment.mouse.previousX = mouse.x
-  DrawingEnviroment.mouse.previousY = mouse.y
-  mouse.x = e.pageX
-  mouse.y = e.pageY
- 
+$("body").mousemove(function (event) {
+  DrawingEnviroment.iconFollowMouse(socket, event)
 })
 
 $("#CommentBtn").click(function () {
-  var commBox = document.getElementById("commentBox")
-  socket.emit('comment', "  " + DrawingEnviroment.userName + ": " + commBox.value + "\n")
-  var commentSpan = document.createElement('div')
-  var chat = document.getElementById("chatArea")
-  commentSpan.value = DrawingEnviroment.userName + ": " + commBox.value + '\n'
-  commentSpan.innerHTML = DrawingEnviroment.userName + ": " + commBox.value + '\n'
-  commBox.value = ""
-  commentSpan.classList = 'redSpan'
-  commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
-  chat.value = chat.value + commentSpan.value
-  if (ReturnChatCount() > ReturnChatLimit()) {
-    chat.innerHTML = ''
-    ChatCount_Set(0)
-  }
-  chat.append(commentSpan)
-  ChatCount_Inc()
+  var commentBox = document.getElementById("commentBox")
+  var comment = `${DrawingEnviroment.userName} : ${commentBox.value} \n`
+  DrawingEnviroment.makeAComment(comment, "redSpan")
+  commentBox.value = ""
+  socket.emit('comment', comment)
 })
 document.querySelector("#commentBox").addEventListener("keydown", event => {
   if (event.key !== "Enter") return
@@ -12020,25 +11843,16 @@ document.querySelector("#commentBox").addEventListener("keydown", event => {
 $("#NameBtn").click(function () {
   var NameBox = document.getElementById("NameBox")
   NameBox.value = NameBox.value.trim()
-  if (!DrawingEnviroment.isNamePicked && NameBox.value != "") {
-    var NameBox = document.getElementById("NameBox")
-    DrawingEnviroment.userName = NameBox.value
-    DrawingEnviroment.isNamePicked = true
-    DrawingEnviroment.userName = NameBox.value
+  var isNameAccepted = !DrawingEnviroment.isNamePicked && NameBox.value != ""
+  if (isNameAccepted) {
+    DrawingEnviroment.changeName()
     document.getElementById(socket.id + "-span").innerHTML = DrawingEnviroment.userName
     socket.emit("NameChange", {
       id: socket.id + "-span",
       Username: DrawingEnviroment.userName
     })
-    NameBox.value = ""
-    NameBox.setAttribute('readonly', 'readonly')
-    $("#PickANameWindow").css("animation", "MoveUp 0.7s")
-    $("#fullCanv").css("pointer-events", "auto")
-    $("#fullCanv").css("animation", " OpacityUp 1.2s")
-    $("#fullCanv").css("animation-fill-mode", "  forwards")
   }
 })
-setInterval(drawAndEmitInterval, 10)
 
 function sendUsersMovments(){
   socket.emit("UserMoved", {
@@ -12049,11 +11863,11 @@ function sendUsersMovments(){
     Username: DrawingEnviroment.userName
   })
 }
-window.onkeydown = handleKeyDown
-/////////////////
+
 function handleKeyDown(event) {
   if (event.key === "t") {
-    DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color,socket,DrawingEnviroment.isNamePicked,DrawingEnviroment,ctx)
+    DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color, socket, DrawingEnviroment.isNamePicked, DrawingEnviroment, ctx)
   }
 }
-},{"../Modules/DrawingEnviroment.js":12,"../Modules/PixelFunctions.js":14,"../Modules/PixelMath.js":15,"../Modules/SetUpFunctions.js":17,"../Modules/SocketOnFunctions.js":18,"file-saver":2,"jquery":3}]},{},[19]);
+
+},{"../Modules/DrawingEnviroment.js":11,"../Modules/PixelFunctions.js":12,"../Modules/PixelMath.js":13,"../Modules/SetUpFunctions.js":15,"file-saver":1,"jquery":2}]},{},[17]);

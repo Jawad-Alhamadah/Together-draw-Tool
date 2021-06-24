@@ -1,5 +1,4 @@
 const {rgbaToText} = require("./PixelFunctions.js")
-const {CreatePath} = require("./FillToolFunctions.js")
 var $ = require("jquery")
 
 function Socket_DrawEvents_Recieved(ctx,color,socket,DrawingEnviroment){
@@ -135,23 +134,8 @@ function Socket_NameChangeEvent_Recieved(socket){
       })
 }
 
-function Socket_CommentEvent_Recieved(socket){
-   
-    socket.on('comment', function (data) { 
-        var chat = document.getElementById("chatArea")
-        var RecievedCommentSpan = document.createElement('div')
-        RecievedCommentSpan.classList = "blueSpan"
-        RecievedCommentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
-        RecievedCommentSpan.value = "  " + data + "\n"
-        RecievedCommentSpan.innerHTML = " \n" + data
-        if (chatCounter > chatLimit) {
-          chatCounter = 0
-          chat.innerHTML = ''
-        }
-        chatCounter++
-        chat.append(RecievedCommentSpan)
-      
-      })
+function Socket_CommentEvent_Recieved(socket,DrawingEnviroment){
+    socket.on('comment', (data) => DrawingEnviroment.makeAComment(`${data} \n`, "blueSpan"))
 }
 
 function ReturnChatCount(){ return chatCounter}

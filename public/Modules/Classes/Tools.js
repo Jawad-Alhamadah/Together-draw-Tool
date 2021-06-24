@@ -6,42 +6,42 @@ const {Brush} = require("./Brush")
   
 class Tools {
     constructor() {
-        this.brush=new Brush('BrushTool.png','BrushTool',true,"")
-        this.bucket=new Bucket('paint-bucket-4.png','BucketTool',false,"paint-bucket-4.png")
-        this.eraser=new Eraser('eraser.png','EraserTool',false,"")
-        this.colorPicker=new ColorPicker('color-picker.png','ColorPickerTool',false,"dropper.png")
-          }
-    activateBrush(event,DrawingEnviroment) {
-        this.brush.isActive       = true
-        this.eraser.isActive      = false
-        this.colorPicker.isActive = false
-        this.bucket.isActive      = false
-        this.brush.activationSetUp(event,DrawingEnviroment)
+        this.brush = new Brush('BrushTool-2.png', 'BrushTool', true, "")
+        this.bucket = new Bucket('paint-bucket-4.png', 'BucketTool', false, "paint-bucket-4.png")
+        this.eraser = new Eraser('eraser.png', 'EraserTool', false, "")
+        this.colorPicker = new ColorPicker('color-picker.png', 'ColorPickerTool', false, "dropper.png")
     }
-    activateEraser(event,DrawingEnviroment) {
-        this.eraser.isActive      = true 
-        this.brush.isActive       = false
+    activateBrush(DrawingEnviroment) {
+        this.brush.isActive = true
+        this.eraser.isActive = false
         this.colorPicker.isActive = false
-        this.bucket.isActive      = false
-        this.eraser.activationSetUp(event,DrawingEnviroment)
-       
+        this.bucket.isActive = false
+        this.brush.activationSetUp(DrawingEnviroment)
     }
-    activateColorPicker(event,DrawingEnviroment) {
+    activateEraser(DrawingEnviroment) {
+        this.eraser.isActive = true
+        this.brush.isActive = false
+        this.colorPicker.isActive = false
+        this.bucket.isActive = false
+        this.eraser.activationSetUp(DrawingEnviroment)
+
+    }
+    activateColorPicker(DrawingEnviroment) {
         this.colorPicker.isActive = true
-        this.brush.isActive       = false
-        this.eraser.isActive      = false
-        this.bucket.isActive      = false
-        this.colorPicker.activationSetUp(event,DrawingEnviroment)
+        this.brush.isActive = false
+        this.eraser.isActive = false
+        this.bucket.isActive = false
+        this.colorPicker.activationSetUp(DrawingEnviroment)
     }
-    activateBucket(event,DrawingEnviroment) {
-        this.bucket.isActive      = true
-        this.brush.isActive       = false
-        this.eraser.isActive      = false
-        this.colorPicker.isActive = false  
-        this.bucket.activationSetUp(event,DrawingEnviroment)
+    activateBucket(DrawingEnviroment) {
+        this.bucket.isActive = true
+        this.brush.isActive = false
+        this.eraser.isActive = false
+        this.colorPicker.isActive = false
+        this.bucket.activationSetUp(DrawingEnviroment)
     }
-     
-  }
-  module.exports = {
+
+}
+module.exports = {
     Tools
-  }
+}
