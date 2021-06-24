@@ -28,38 +28,33 @@ function hexToRGB(hex, alpha) {
   }
 }
 
-function getColorOfPixel(imageData,x,y){
-  var rgba= getPixel(imageData,x,y)
+function getColorOfPixel(imageData, x, y) {
+  var rgba = getPixel(imageData, x, y)
   return `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
 }
 
-function rgbaToHex(rgba) {
-  var inParts = rgba.substring(rgba.indexOf("(")).split(","),
-    r = parseInt(trim(inParts[0].substring(1)), 10),
-    g = parseInt(trim(inParts[1]), 10),
-    b = parseInt(trim(inParts[2]), 10),
-    a = parseFloat(trim(inParts[3].substring(0, inParts[3].length - 1))).toFixed(2)
-  var outParts = [
-    r.toString(16),
-    g.toString(16),
-    b.toString(16),
-    Math.round(a * 255).toString(16).substring(0, 2)
-  ]
+function RGBToHex(rgba) {
+  var r, g, b, a;
 
-  // Pad single-digit output values
-  outParts.forEach(function (part, i) {
-    if (part.length === 1) {
-      outParts[i] = '0' + part
-    }
-  })
+  r = rgba[0]
+  g = rgba[1]
+  b = rgba[2]
+  a = rgba[3]
+  r = r.toString(16);
+  g = g.toString(16);
+  b = b.toString(16);
+  a = Math.round(a * 255).toString(16);
 
-  return ('#' + outParts.join(''))
-}
+  if (r.length == 1)
+    r = "0" + r;
+  if (g.length == 1)
+    g = "0" + g;
+  if (b.length == 1)
+    b = "0" + b;
+  if (a.length == 1)
+    a = "0" + a;
 
-if (process.argv.length >= 3) {
-  console.log(rgbaToHex(process.argv[2]))
-} else {
-
+  return "#" + r + g + b;
 }
 
 
@@ -68,6 +63,6 @@ module.exports = {
   rgbaToText,
   hexToRGB,
   setPixel,
-  rgbaToHex,
+  RGBToHex,
   getColorOfPixel
 }

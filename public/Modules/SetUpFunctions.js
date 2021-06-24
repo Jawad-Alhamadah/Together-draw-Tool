@@ -44,6 +44,7 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
    
     DrawingEnviroment.fillWithWhite(ctx)
     DrawingEnviroment.CreatePalletDivs()
+    DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
     addClickEvents(DrawingEnviroment)
     UserNameAndCursorDivsSetup(socket, userName)
     Socket_DrawEvents_Recieved(ctx, color, socket,DrawingEnviroment)
@@ -52,7 +53,7 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
     Socket_NewUser_Recieved(socket)
     Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment)
     Socket_NameChangeEvent_Recieved(socket)
-    Socket_CommentEvent_Recieved(socket)
+    Socket_CommentEvent_Recieved(socket,DrawingEnviroment)
   }
 
   function addClickEvents(DrawingEnviroment) {
@@ -69,33 +70,29 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
     })
     $("#EraserTool").click((event) => {
       if (!DrawingEnviroment.tools.eraser.isActive) {
-        DrawingEnviroment.tools.activateEraser(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateEraser(DrawingEnviroment)
       }
   
     })
     $("#BrushTool").click((event) => {
       if (!DrawingEnviroment.tools.brush.isActive) {
-        DrawingEnviroment.tools.activateBrush(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
       }
     })
   
     $("#ColorPickerTool").click((event) => {
       if (!DrawingEnviroment.tools.colorPicker.isActive) {
-        DrawingEnviroment.tools.activateColorPicker(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateColorPicker(DrawingEnviroment)
       }
     })
   
     $("#BucketTool").click((event) => {
       if (!DrawingEnviroment.tools.bucket.isActive) {
-        DrawingEnviroment.tools.activateBucket(event, DrawingEnviroment)
+        DrawingEnviroment.tools.activateBucket(DrawingEnviroment)
       }
     })
   }
-  
-
- 
 
 module.exports = {
-
     UserNameAndCursorDivsSetup,RandomizeChatIcon,setUpInitialEnviroment,addClickEvents
 }

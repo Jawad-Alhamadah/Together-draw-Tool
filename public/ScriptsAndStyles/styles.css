@@ -17,49 +17,18 @@ body {
   left: 21px;
 }
 
-#BucketTool {
-
-  background-size: 84%;
-  background-position-x: 6px;
-  background-position-y: 7px;
-  /* background-blend-mode: initial; */
-  background-color: #bcdacf;
-  /* background-blend-mode: color; */
-  background-repeat: no-repeat;
-}
-
-#BrushTool {
-  background-size: 84%;
-  background-position-x: 6px;
-  background-position-y: 7px;
-  background-color: #bcdacf;
-  background-repeat: no-repeat;
-  opacity: 40%;
-}
-
-#ColorPickerTool {
+.ToolsIcons{
   background-size: 84%;
   background-position-x: 6px;
   background-position-y: 7px;
   background-color: #bcdacf;
   background-repeat: no-repeat;
 }
-
-#EraserTool {
-  background-size: 84%;
-  background-position-x: 6px;
-  background-position-y: 7px;
-  background-color: #bcdacf;
-  background-repeat: no-repeat;
-}
-
 #BrushSizeUP {
   background-image: url('paint-brush.png');
   background-size: 173%;
   background-position-x: -27px;
   background-position-y: 5px;
-  background-color: #bcdacf;
-  background-repeat: no-repeat;
 }
 
 #BrushSizeDown {
@@ -67,8 +36,6 @@ body {
   background-size: 43%;
   background-position-x: 23px;
   background-position-y: 23px;
-  background-color: #bcdacf;
-  background-repeat: no-repeat;
 }
 
 #ColorWheel {
@@ -145,7 +112,6 @@ input[type="color"]::-webkit-color-swatch {
 
 #container {
   position: absolute;
-  background-color: white;
   overflow: hidden;
   cursor: none;
 }

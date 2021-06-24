@@ -4,36 +4,36 @@
 
  var $ = require("jquery")
  class DrawingEnviroment {
-     constructor(canvWidth, canvHeight, mouseX, mouseY, userName, color,correctionX,correctionY) {
-         this.mouse = new Mouse(mouseX, mouseY,correctionX,correctionY)
-         this.tools = new Tools()
-         this.isNamePicked = false
-         this.canvWidth = canvWidth
-         this.canvHeight = canvHeight
-         this.userName = userName
-         this.color = hexToRGB(color, 255)
-         this.savedColor=hexToRGB(color, 255)
-         this.brushSize = 2
-         this.palletColorsList=[]
-         this.brushSizeUpperLimit=6
-         this.brushSizeLowerLimit=2
-         this.chatLimit=20
-         this.chatCounter=0
-         
-     }
+   constructor(canvWidth, canvHeight, mouseX, mouseY, userName, color, correctionX, correctionY) {
+     this.mouse = new Mouse(mouseX, mouseY, correctionX, correctionY)
+     this.tools = new Tools()
+     this.isNamePicked = false
+     this.canvWidth = canvWidth
+     this.canvHeight = canvHeight
+     this.userName = userName
+     this.color = hexToRGB(color, 255)
+     this.savedColor = hexToRGB(color, 255)
+     this.brushSize = 2
+     this.palletColorsList = []
+     this.brushSizeUpperLimit = 6
+     this.brushSizeLowerLimit = 2
+     this.chatLimit = 18
+     this.chatCounter = 0
 
-     fillWithWhite(ctx) {
-         ctx.canvas.width = 1094
-         ctx.canvas.height = 500
-         ctx.strokeRect(20, 20, 1040, 445)
-         ctx.fillStyle = "white"
-         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-         ctx.fillStyle = "black"
-     }
-     CreatePalletDivs() {
-         this.PushColors(this.palletColorsList)
-         for (var i = 0; i < this.palletColorsList.length; i++) this.createIndividualColorPalletDiv(this.palletColorsList,i) 
-     }
+   }
+
+   fillWithWhite(ctx) {
+     ctx.canvas.width = 1094
+     ctx.canvas.height = 500
+     ctx.strokeRect(20, 20, 1040, 445)
+     ctx.fillStyle = "white"
+     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+     ctx.fillStyle = "black"
+   }
+   CreatePalletDivs() {
+     this.PushColors(this.palletColorsList)
+     for (var i = 0; i < this.palletColorsList.length; i++) this.createIndividualColorPalletDiv(this.palletColorsList, i)
+   }
 
     PushColors(col){
         col.push('#000000');col.push('#FFFFFF');col.push('#999900');col.push('#4C9900');col.push('#004C99');
@@ -53,17 +53,72 @@
         col.push('#E67D4E');col.push('#F0E216');col.push('#D68715');
       }
     
-    createIndividualColorPalletDiv(palletColorsList,i) {
-        var colorpallentTemp = document.getElementById("ColorPallet")
-        let tempPallet = document.createElement("div")
-        colorpallentTemp.appendChild(tempPallet)
-        tempPallet.id = palletColorsList[i].substring(1)
-        tempPallet.style.backgroundColor = "#" + tempPallet.id
-        $("#" + tempPallet.id).click((e) => this.setBrushColor(hexToRGB("#" + e.target.id, 255)))
+    createIndividualColorPalletDiv(palletColorsList, i) {
+      var colorpallentTemp = document.getElementById("ColorPallet")
+      let tempPallet = document.createElement("div")
+      colorpallentTemp.appendChild(tempPallet)
+      tempPallet.id = palletColorsList[i].substring(1)
+      tempPallet.style.backgroundColor = "#" + tempPallet.id
+      $("#" + tempPallet.id).click((event) => {
+        var color = (hexToRGB("#" + event.target.id, 255))
+        this.setBrushColor(color)
+        this.savedColor = color
+        $("#ColorInput").val("#" + event.target.id)
+      }) //
     }
-    setBrushColor = (desiredColor)=> this.color= desiredColor
-    
- }
- module.exports = {
-     DrawingEnviroment
- }
+
+    makeAComment(comment, spanClass) {
+      var commentSpan = document.createElement('div')
+      var chat = document.getElementById("chatArea")
+      commentSpan.innerHTML = comment
+      commentSpan.classList = spanClass
+      commentSpan.style.font = ' italic bold 18px Times, Times New Roman, serif'
+      this.chatCounter++;
+      if (this.chatCounter > this.chatLimit) {
+        chat.innerHTML = ''
+        this.chatCounter = 0
+      }
+      chat.append(commentSpan)
+    }
+
+    crossHairFollowMouse(socket, event) {
+      var mouse = this.mouse
+      $("#" + socket.id + "-span").css("left", event.pageX - (mouse.CorrectionX - 15))
+      $("#" + socket.id + "-span").css("top", event.pageY - (mouse.CorrectionY - 15))
+      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 18))
+      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 12))
+      this.mouse.previousX = mouse.x
+      this.mouse.previousY = mouse.y
+      mouse.x = event.pageX
+      mouse.y = event.pageY
+    }
+    changeName() {
+      var NameBox = document.getElementById("NameBox")
+      this.userName = NameBox.value
+      this.isNamePicked = true
+      NameBox.value = ""
+      NameBox.setAttribute('readonly', 'readonly')
+      this.removeNameWindow()
+    }
+    removeNameWindow() {
+      $("#PickANameWindow").css("animation", "MoveUp 0.7s")
+      $("#fullCanv").css("pointer-events", "auto")
+      $("#fullCanv").css("animation", " OpacityUp 1.2s")
+      $("#fullCanv").css("animation-fill-mode", "  forwards")
+    }
+    iconFollowMouse(socket, event) {
+      var mouse = this.mouse
+      $("#" + socket.id + "-span").css("left", event.pageX - (mouse.CorrectionX - 15))
+      $("#" + socket.id + "-span").css("top", event.pageY - (mouse.CorrectionY - 15))
+      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 18))
+      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 12))
+      this.mouse.previousX = mouse.x
+      this.mouse.previousY = mouse.y
+      mouse.x = event.pageX
+      mouse.y = event.pageY
+    }
+    setBrushColor = (desiredColor) => this.color = desiredColor
+    }
+module.exports = {
+   DrawingEnviroment
+}
