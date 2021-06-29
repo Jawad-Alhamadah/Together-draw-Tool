@@ -20,7 +20,7 @@ const {calcStraightLine} = require("../Modules/PixelMath.js")
 const {rgbaToText,hexToRGB, RGBToHex} = require("../Modules/PixelFunctions.js")
 const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFunctions.js")
 const DrawingEnv=require("../Modules/DrawingEnviroment.js")
-
+//
 //https://together-draw-stuff.herokuapp.com
 //http://localhost:3000
 var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
@@ -63,9 +63,9 @@ canvas.addEventListener('mousedown', function (event) {
   var isEventALeftClick = event.which == 1
   if (isEventALeftClick) {
     DrawingEnviroment.mouse.isDown = true
-    if (DrawingEnviroment.tools.bucket.isActive) {
+    if (DrawingEnviroment.tools.bucket.isActive) 
       DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color, socket, DrawingEnviroment.isNamePicked, DrawingEnviroment, ctx)
-    }
+    
     if (DrawingEnviroment.tools.colorPicker.isActive) {
       var mouse = DrawingEnviroment.mouse
       var pickedColor = ctx.getImageData(mouse.x - mouse.CorrectionX, mouse.y - mouse.CorrectionY, 1, 1).data
