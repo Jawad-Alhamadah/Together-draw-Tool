@@ -1,7 +1,7 @@
 const {rgbaToText} = require("./PixelFunctions.js")
 var $ = require("jquery")
 
-function Socket_DrawEvents_Recieved(ctx,color,socket,DrawingEnviroment){
+function Socket_DrawEvents_Recieved(ctx,color,socket,Bucket){
 
     socket.on('draw', function (data) {
         data.data.forEach((point) => {
@@ -15,7 +15,7 @@ function Socket_DrawEvents_Recieved(ctx,color,socket,DrawingEnviroment){
             color[1] = point.data.hostColor[1]
             color[2] = point.data.hostColor[2]
             color[3] = point.data.hostColor[3]
-            DrawingEnviroment.tools.bucket.FillArea({
+            Bucket.FillArea({
               x: point.data.x,
               y: point.data.y,
               color: point.data.color
@@ -104,7 +104,7 @@ function Socket_NewUser_Recieved(socket){
 }
 
 
-function Socket_FillEvent_Recieved(ctx,color,socket,DrawingEnviroment){
+function Socket_FillEvent_Recieved(ctx,color,socket,Bucket){
     socket.on('fill', function (data) {
 
         var temp = color.slice(0)
@@ -113,7 +113,7 @@ function Socket_FillEvent_Recieved(ctx,color,socket,DrawingEnviroment){
         color[2] = data.hostColor[2]
         color[3] = data.hostColor[3]
       
-        DrawingEnviroment.tools.bucket.FillArea({
+        Bucket.FillArea({
           x: data.x,
           y: data.y,
           color: data.color

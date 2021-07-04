@@ -6,68 +6,90 @@
   <meta charset="utf-8">
   <title></title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.0/socket.io.js"></script>
-
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
 <body>
+  <div id="fullPage">
 
-  <div id="fullCanv">
-    <div id="toolsDiv">
-      <div id="BrushTool" class="ToolsIcons"></div>
-      <div id="ColorPickerTool" class="ToolsIcons"></div>
-      <div id="BucketTool" class="ToolsIcons"></div>
-      <div id="EraserTool" class="ToolsIcons"></div>
-      <div id="BrushSizeUP" class="ToolsIcons"></div>
-      <div id="BrushSizeDown" class="ToolsIcons"></div>
-    </div>
 
-    <textarea id="commentBox" cols="50" rows="5" class='inputClass BorderStyle BorderRadius'></textarea>
-    <div>
-      <input type="image" src="floppy-disk.png" name="saveForm" id="SaveBtn"></input>
-    </div>
-    <button type="button" id="CommentBtn" class="myButton BorderStyle BorderRadius">Send</button>
-    <div id='chat'>
-      <div id="chatArea" class='inputClass BorderStyle BorderRadius' id="chatArea" readonly>
+    <div id="fullCanv" class="row h-100">
+      <div id="toolsDiv" class="  ">
+        <div id="BrushTool" class="ToolsIcons"></div>
+        <div id="ColorPickerTool" class="ToolsIcons"></div>
+        <div id="BucketTool" class="ToolsIcons"></div>
+        <div id="EraserTool" class="ToolsIcons"></div>
+        <div id="BrushSizeUP" class="ToolsIcons"></div>
+        <div id="BrushSizeDown" class="ToolsIcons"></div>
       </div>
-    </div>
-    <div id="whiteDiv">
-      <div id="container" class="BorderStyle BorderRadius">
-        <canvas id="Canvas">
-        </canvas>
-
+  
+    
+      <div id="whiteDiv" class="col-9 h-90">
+        <div id="container" class="BorderStyle BorderRadius">
+          <canvas id="Canvas">
+          </canvas>
+  
+        </div>
+  
+        
+        <div id="ColorsDiv" class="BorderStyle BorderRadius">
+  
+          <div id="ColorPallet"></div>
+  
+          <input type="color" id="ColorInput"> </input>
+          <div id="ColorWheel"></div>
+  
+        </div>
+      
+        <footer id="ArtRefs" class="disabledHighlight">
+          <div>Icons made by <a href="https://smashicons.com/" title="Smashicons">Smashicons</a> from <a
+              href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+          <div>Icons made by <a href="https://www.flaticon.com/authors/icongeek26" title="Icongeek26">Icongeek26</a> from <a
+              href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+          <div>Icons made by <a href="" title="Those Icons">Those Icons</a> from <a href="https://www.flaticon.com/"
+              title="Flaticon">www.flaticon.com</a></div>
+          <div>Icons made by <a href="https://www.flaticon.com/authors/itim2101" title="itim2101">itim2101</a> from <a
+              href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+          <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a
+              href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+          <div>Icons made by <a href="" title="monkik">monkik</a> from <a href="https://www.flaticon.com/"
+              title="Flaticon">www.flaticon.com</a></div>
+          <div>Icons made by <a href="" title="xnimrodx">xnimrodx</a> from <a href="https://www.flaticon.com/"
+              title="Flaticon">www.flaticon.com</a></div>
+        </footer>
       </div>
-      <div id="ColorsDiv" class="BorderStyle BorderRadius">
-
-        <div id="ColorPallet"></div>
-
-        <input type="color" id="ColorInput"> </input>
-        <div id="ColorWheel"></div>
-
-      </div>
-    </div>
+    
+      <div  id="ChatDiv">
+        <div id="chatArea" class='inputClass BorderStyle BorderRadius' id="chatArea" readonly>
+        </div>
+        <div class="row justify-content-between disabledHighlight">
+          <input type="image" src="floppy-disk.png" name="saveForm" id="SaveBtn" ></input>
+          <button type="button" id="CommentBtn" class=" col-1 myButton BorderStyle BorderRadius">Send</button>
+        </div> 
+        
+        <textarea id="commentBox" cols="50" rows="5" class='inputClass BorderStyle BorderRadius'></textarea>
+       
+          
   </div>
-  <div id="PickANameWindow"> <span id="LoadingSpan">Loading...</span>
-    <button type="Name" id="NameBtn" " class=" NameBtnHover">Confirm</button>
-    <textarea cols="50" rows="1" id="NameBox" class='inputClass BorderStyle BorderRadius '></textarea>
-  </div>
-  <footer id="ArtRefs">
-    <div>Icons made by <a href="https://smashicons.com/" title="Smashicons">Smashicons</a> from <a
-        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-    <div>Icons made by <a href="https://www.flaticon.com/authors/icongeek26" title="Icongeek26">Icongeek26</a> from <a
-        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-    <div>Icons made by <a href="" title="Those Icons">Those Icons</a> from <a href="https://www.flaticon.com/"
-        title="Flaticon">www.flaticon.com</a></div>
-    <div>Icons made by <a href="https://www.flaticon.com/authors/itim2101" title="itim2101">itim2101</a> from <a
-        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-    <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a
-        href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-    <div>Icons made by <a href="" title="monkik">monkik</a> from <a href="https://www.flaticon.com/"
-        title="Flaticon">www.flaticon.com</a></div>
-    <div>Icons made by <a href="" title="xnimrodx">xnimrodx</a> from <a href="https://www.flaticon.com/"
-        title="Flaticon">www.flaticon.com</a></div>
-  </footer>
-</body>
+    
+      </div>
+  
+      
+     
+    
+    <div id="PickANameWindow"> <span id="LoadingSpan">Loading...</span>
+      <button type="Name" id="NameBtn" " class=" NameBtnHover">Confirm</button>
+      <textarea cols="50" rows="1" id="NameBox" class='inputClass BorderStyle BorderRadius '></textarea>
+    </div>
+  
+  
+
+  </div> 
+  
+ </body>
+
+
 <script src="bundle.js"></script>
 
 </html>

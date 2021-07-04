@@ -4,27 +4,26 @@
 
  var $ = require("jquery")
  class DrawingEnviroment {
-   constructor(canvWidth, canvHeight, mouseX, mouseY, userName, color, correctionX, correctionY) {
-     this.mouse = new Mouse(mouseX, mouseY, correctionX, correctionY)
+   constructor(setup) {
+     this.mouse = new Mouse(setup.mouseX, setup.mouseY, setup.correctionX, setup.correctionY)
      this.tools = new Tools()
      this.isNamePicked = false
-     this.canvWidth = canvWidth
-     this.canvHeight = canvHeight
-     this.userName = userName
-     this.color = hexToRGB(color, 255)
-     this.savedColor = hexToRGB(color, 255)
-     this.brushSize = 2
+     this.canvWidth = setup.canvWidth
+     this.canvHeight = setup.canvHeight
+     this.userName = setup.userName
+     this.color = hexToRGB(setup.color, 255)
+     this.savedColor = hexToRGB(setup.color, 255)
+     this.brushSize = setup.brushSize
      this.palletColorsList = []
-     this.brushSizeUpperLimit = 6
-     this.brushSizeLowerLimit = 2
-     this.chatLimit = 18
+     this.brushSizeUpperLimit = setup.brushSizeUpperLimit
+     this.brushSizeLowerLimit = setup.brushSizeLowerLimit
+     this.chatLimit = setup.chatLimit
      this.chatCounter = 0
 
    }
 
    fillWithWhite(ctx) {
-     ctx.canvas.width = 1094
-     ctx.canvas.height = 500
+     
      ctx.strokeRect(20, 20, 1040, 445)
      ctx.fillStyle = "white"
      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -110,8 +109,8 @@
       var mouse = this.mouse
       $("#" + socket.id + "-span").css("left", event.pageX - (mouse.CorrectionX - 15))
       $("#" + socket.id + "-span").css("top", event.pageY - (mouse.CorrectionY - 15))
-      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 18))
-      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 12))
+      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 8))
+      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 9))
       this.mouse.previousX = mouse.x
       this.mouse.previousY = mouse.y
       mouse.x = event.pageX

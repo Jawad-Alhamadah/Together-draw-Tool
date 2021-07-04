@@ -47,11 +47,11 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
     DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
     addClickEvents(DrawingEnviroment)
     UserNameAndCursorDivsSetup(socket, userName)
-    Socket_DrawEvents_Recieved(ctx, color, socket,DrawingEnviroment)
+    Socket_DrawEvents_Recieved(ctx, color, socket,DrawingEnviroment.tools.bucket)
     Socket_MouseEvents_Recieved(ctx, socket)
     Socket_HandleUserMovement_Recieved(socket)
     Socket_NewUser_Recieved(socket)
-    Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment)
+    Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment.tools.bucket)
     Socket_NameChangeEvent_Recieved(socket)
     Socket_CommentEvent_Recieved(socket,DrawingEnviroment)
   }

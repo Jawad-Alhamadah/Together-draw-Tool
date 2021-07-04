@@ -8,11 +8,7 @@ class Bucket extends Tool{
   super(iconSrc,iconDivId,isActive,cursorIcon)
 
   }
-  useBucket(fillColor, socket, isNamePicked, DrawingEnviroment, ctx) {
-    //Setup variables for eaiser to read If statments.
-    var mouse = DrawingEnviroment.mouse
-    var width = DrawingEnviroment.canvWidth
-    var height = DrawingEnviroment.canvHeight
+  useBucket(fillColor, socket, isNamePicked, mouse,width,height, ctx) {
     var isInsideWidth = mouse.x < width && mouse.x > 0
     var isInsideHeight = mouse.y < height && mouse.y > 0
     var isInsideDrawingArea = isInsideWidth && isInsideHeight
@@ -35,13 +31,7 @@ FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket, ctx) {
     hostColor: fillColor
   })
 }
- CreatePath(startingPoint, ctx, fillColor) {
-   this.FillArea({
-     x: startingPoint.x,
-     y: startingPoint.y,
-     color: startingPoint.color
-   }, ctx, fillColor, imageData)
- }
+
  FillArea(firstpoint, ctx, fillColor) {
    var imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
    var isPixelProcessedList = []
