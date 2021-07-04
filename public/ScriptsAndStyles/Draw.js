@@ -21,9 +21,9 @@ const {rgbaToText,hexToRGB, RGBToHex} = require("../Modules/PixelFunctions.js")
 const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFunctions.js")
 const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
-//https://together-draw-stuff.herokuapp.com
+//https://draw-with-us.herokuapp.com/ 
 //http://localhost:3000
-var socket = io.connect('http://localhost:3000', {
+var socket = io.connect('https://draw-with-us.herokuapp.com/ ', {
   transports: ['websocket']
 })
 
