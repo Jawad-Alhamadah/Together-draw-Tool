@@ -22,34 +22,29 @@ const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFuncti
 const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
 //https://together-draw-stuff.herokuapp.com
-//http://localhost:3000
+ 
 var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
 })
 
 var setup={
-  canvWidth:1094,
+  canvWidth:1100,
   canvHeight:500,
-  correctionX:120,
-  correctionY:19,
-  initialName:"anon",
-  initialColor:"#000000",
-  initialMouseX:0,
-  initialMouseY:0
+  correctionX:135,
+  correctionY:22,
+  userName:"anon",
+  color:"#000000",
+  brushSize : 2,
+  brushSizeUpperLimit : 6,
+  brushSizeLowerLimit : 2,
+  chatLimit : 18,
+  chatCounter : 0,
 }
 var canvas = document.getElementById('Canvas')
 var ctx = canvas.getContext('2d')
 ctx.canvas.width = setup.canvWidth
 ctx.canvas.height = setup.canvHeight
-var DrawingEnviroment = new DrawingEnv.DrawingEnviroment(
-  setup.canvWidth,
-  setup.canvHeight,
-  setup.initialMouseX,
-  setup.initialMouseY,
-  setup.initialName,
-  setup.initialColor,
-  setup.correctionX,
-  setup.correctionY)
+var DrawingEnviroment = new DrawingEnv.DrawingEnviroment(setup)
 
 socket.on('connect', () => {
   RandomizeChatIcon(BackgroundIcon_1, BackgroundIcon_3)
@@ -58,14 +53,20 @@ socket.on('connect', () => {
   setInterval(drawAndEmitInterval, 10)
   window.onkeydown = handleKeyDown
 })
-
+//listener for mouseDown on canvas.  
 canvas.addEventListener('mousedown', function (event) {
   var isEventALeftClick = event.which == 1
-  if (isEventALeftClick) {
+  if (!isEventALeftClick) return
     DrawingEnviroment.mouse.isDown = true
     if (DrawingEnviroment.tools.bucket.isActive) 
-      DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color, socket, DrawingEnviroment.isNamePicked, DrawingEnviroment, ctx)
-    
+      DrawingEnviroment.tools.bucket.useBucket(
+        DrawingEnviroment.color, 
+        socket, 
+        DrawingEnviroment.isNamePicked, 
+        DrawingEnviroment.mouse,
+        DrawingEnviroment.canvWidth,
+        DrawingEnviroment.canvHeight, 
+        ctx)
     if (DrawingEnviroment.tools.colorPicker.isActive) {
       var mouse = DrawingEnviroment.mouse
       var pickedColor = ctx.getImageData(mouse.x - mouse.CorrectionX, mouse.y - mouse.CorrectionY, 1, 1).data
@@ -75,7 +76,7 @@ canvas.addEventListener('mousedown', function (event) {
       var colorInHex = RGBToHex(pickedColor)
       $("#ColorInput").val(colorInHex)
     }
-  }
+ 
 })
 canvas.addEventListener('mouseup', function () {
   DrawingEnviroment.mouse.isDown = false
@@ -157,6 +158,13 @@ function sendUsersMovments(){
 
 function handleKeyDown(event) {
   if (event.key === "t") {
-    DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color, socket, DrawingEnviroment.isNamePicked, DrawingEnviroment, ctx)
+    DrawingEnviroment.tools.bucket.useBucket(
+      DrawingEnviroment.color, 
+      socket, 
+      DrawingEnviroment.isNamePicked, 
+      DrawingEnviroment.mouse,
+      DrawingEnviroment.canvWidth,
+      DrawingEnviroment.canvHeight, 
+      ctx)
   }
 }

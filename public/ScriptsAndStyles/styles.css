@@ -1,85 +1,124 @@
+
+.disabledHighlight{
+  -webkit-user-select: none;
+}
+html{
+  height: 100%;
+}
+#ChatDiv{
+  width: 17%;
+  /* padding-right: 1%; */
+  height: 103%;
+}
 body {
   overflow-y: hidden;
-  background: #102320;
+  background-color: #0e4e43;
   overflow-x: hidden;
+  width: 100%;
+  height: 100%;
 
 
+}
+#fullPage{
+  
+width: 100%;
+  
+height: 100%;
+  
+background-color: #0e2f1c;
+  
+/* margin-left: 2%; */
+  
+padding-left: 2%;
 }
 
 #Image_2 {
 
-  position: absolute;
+position: absolute;
 
-  width: 50px;
+width: 106%;
 
-  top: -34px;
+top: -30px;
 
-  left: 21px;
+left: 22px;
 }
 
 .ToolsIcons{
   background-size: 84%;
-  background-position-x: 6px;
-  background-position-y: 7px;
+  background-position-x: 55%;
+  background-position-y: 40%;
   background-color: #bcdacf;
   background-repeat: no-repeat;
+  border: solid #278c7a 5px;
 }
 #BrushSizeUP {
   background-image: url('paint-brush.png');
   background-size: 173%;
-  background-position-x: -27px;
-  background-position-y: 5px;
+  background-position-x: 55%;
+  background-position-y:-10%;
 }
 
 #BrushSizeDown {
   background-image: url('paint-brush.png');
   background-size: 43%;
-  background-position-x: 23px;
-  background-position-y: 23px;
+  background-position-x: 55%;
+  background-position-y: 40%;
 }
 
 #ColorWheel {
   background-image: url('color.png');
-  background-size: 91%;
-  background-position-x: 4px;
-  background-position-y: 8px;
+  background-size: 100%;
+  background-position-x: 2%;
+  background-position-y: 2%;
   background-repeat: no-repeat;
-  position: absolute;
-  width: 100px;
-  height: 104px;
-  left: 944px;
-  top: 31px;
+  width: 8.5%;
+  height: 73%;
+  left: 84.5%;
+  top: 78%;
   -moz-user-select: -moz-none;
   -khtml-user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
   opacity: 100%;
+  position: absolute;
 }
 
 #fullCanv {
-  position: relative;
-  background-color: #0e4e43;
-  width: 1510px;
-  height: 710px;
-  border-radius: 25px;
-  opacity: 30%;
-  pointer-events: none;
-  animation-fill-mode: forwards
+ 
+background-color: #0e4e43;
+ 
+width: 100%;
+ 
+/* height: 100%; */
+ 
+border-radius: 25px;
+ 
+opacity: 30%;
+ 
+pointer-events: none;
+ 
+animation-fill-mode: forwards;
+ 
+overflow: hidden;
+ 
+padding-top: 1%;
+ 
+padding-right: 0.5%;
+ 
+padding-left: 0.6%;
+ 
+border-radius: 1%;
 }
 
 #whiteDiv {
-  border-radius: 25px;
-  width: 1150px;
-  height: 700px;
-  padding-top: 9px;
-  padding-left: 5px;
-  float: left;
+  /* border-radius: 25px; */
+  /* width: 1150px; */
+  /* height: 700px; */
+  margin-right: 1.5%;
 }
 
 #chat {
-  position: absolute;
-  right: 18px;
-  top: 10px;
+ 
   width: 325px;
   height: 480px;
 
@@ -87,12 +126,14 @@ body {
 
 #ColorInput {
   position: relative;
-  top: 54px;
-  left: 961px;
+  top: -53%;
+  left: 88%;
   display: inline-block;
   padding: 1em;
   margin: -1em;
   background-clip: content-box;
+  width: 8%;
+  height: 46%;
 }
 
 input[type="color"] {
@@ -111,9 +152,18 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 #container {
-  position: absolute;
-  overflow: hidden;
-  cursor: none;
+ 
+width: 101%;
+ 
+overflow: hidden;
+ 
+position: relative;
+ 
+height: 71%;
+ 
+width: 100%;
+ 
+width: 102%;
 }
 
 #container>span {
@@ -129,7 +179,6 @@ input[type="color"]::-webkit-color-swatch {
 
 #container>div {
   position: absolute;
-  float: left;
   height: 29px;
   width: 40px;
   -moz-user-select: -moz-none;
@@ -145,7 +194,10 @@ input[type="color"]::-webkit-color-swatch {
 
 #Canvas {
 
-  float: left;
+float: left;
+
+height: 100%;
+cursor:none;
 }
 
 #NameBtn {
@@ -334,8 +386,8 @@ button#NameBtn {}
 
 #CommentBtn {
   position: absolute;
-  right: 1.2%;
-  top: 74.5%;
+  right: 2.2%;
+  top: 73.5%;
   box-shadow: 0px 10px 14px -7px #276873;
   background: linear-gradient(to bottom, #bae1ef 5%, #408c99 100%);
   background-color: #599bb3;
@@ -346,12 +398,14 @@ button#NameBtn {}
   color: #214e5b;
   font-family: Georgia;
   font-size: 13px;
-  padding: 3px 31px;
+  /* padding: 4px 32px; */
   text-decoration: none;
   text-shadow: 0px 0px 0px #154682;
   border-radius: 8px;
   background-color: white;
   border: 4px solid #0c4e51;
+  /* padding-right: 43%; */
+  width: 7%;
 }
 
 #CommentBtn:hover {
@@ -360,26 +414,24 @@ button#NameBtn {}
 }
 
 #commentBox {
-  position: absolute;
-  right: 1.3%;
-  top: 80%;
-  width: 252px;
-  height: 15%;
+   /* right: 1.3%; */
+   /* top: 80%; */
+   width: 100%;
+   height: 16%;
 }
 
 #chatArea {
-  position: absolute;
-  width: 80%;
-  height: 499px;
-  right: 0px;
-  opacity: 96%;
-  padding: 10p;
-  background-image: url("painting-3.png");
-  background-size: 81%;
-  background-position-x: 29px;
-  background-blend-mode: soft-light;
-  background-position-y: 137px;
-  background-repeat: no-repeat;
+   width: 100%;
+   height: 71%;
+   /* right: 0px; */
+   /* opacity: 96%; */
+   padding: 10p;
+   background-image: url("painting-3.png");
+   background-size: 81%;
+   background-position-x: 29px;
+   background-blend-mode: soft-light;
+   background-position-y: 137px;
+   background-repeat: no-repeat;
 }
 
 div#chatArea {}
@@ -417,28 +469,33 @@ div#chatArea {}
 }
 
 #SaveBtn {
-  position: absolute;
-  right: 15.1%;
-  top: 73.5%;
-  width: 2.6%;
+  /* position: absolute; */
+  /* right: 15.1%; */
+  /* top: 73.5%; */
+  width: 19.6%;
+  padding-left: 7%;
+  padding-top: 3%;
+  padding-bottom: 3%;
 }
 
 
 #NameBox {
 
-  font-family: cursive;
+font-family: cursive;
 
-  position: absolute;
+position: absolute;
 
-  right: 13%;
+right: 13%;
 
-  width: 70%;
+width: 70%;
 
-  top: 47%;
+top: 47%;
 
-  height: 42px;
+height: 42px;
 
-  font-size: 30px;
+font-size: 24px;
+
+overflow-y: hidden;
 }
 
 .redSpan {
@@ -462,11 +519,17 @@ div#chatArea {}
 
 #ColorsDiv {
   background-color: #0b4139;
-  width: 1092px;
-  height: 150px;
-  position: absolute;
-  bottom: 23px;
-  left: 109px;
+  /* width: 1092px; */
+  height: 21%;
+  /* position: absolute; */
+  /* bottom: 1%; */
+  /* left: 109px; */
+  margin-top: 2%;
+  padding-left: 4%;
+  padding-right: 2%;
+  width: 102%;
+  padding-top: 1%;
+  padding-bottom: 1%;
 }
 
 #ColorPallet {
@@ -483,17 +546,18 @@ div#chatArea {}
 }
 
 #ColorsDiv>div:not(#ColorWheel) {
-  width: 93%;
-  height: 86%;
-  position: absolute;
-  left: 3.5%;
-  top: 6%;
+  width: 98%;
+  height: 100%;
+  /* position: absolute; */
+  /* left: 3.5%; */
+  /* top: 6%; */
   /* margin-top: -59px; */
   /* margin-left: -289px; */
   background: #659793;
   border-radius: 5px;
   box-shadow: 5px;
   box-shadow: inset 6px 3px 27px #23736e;
+  padding-top: 1;
 }
 
 .BorderStyle {
@@ -505,32 +569,29 @@ div#chatArea {}
 }
 
 #toolsDiv {
-  background-color: rgba(38, 84, 75, 1);
+  /* background-color: rgba(38, 84, 75, 1); */
   /* position: absolute; */
-  width: 5%;
-  height: 71.2%;
-  top: 0px;
-  left: 0px;
-  float: left;
+  width: 5.5%;
+  height: 72.2%;
+  /* top: 0px; */
+  /* left: 0px; */
+  /* float: left; */
   display: grid;
   grid-template-columns: 1fr;
   grid-auto-rows: 16%;
   gap: 4px 2px;
   border-radius: 5px;
-  margin-top: 10px;
-  margin-right: 14px;
-  margin-left: 10px;
+  /* margin-top: 10px; */
+  /* margin-right: 14px; */
+  /* margin-left: 2%; */
   /* border: ridge; */
-  border: solid #1a7a72;
+  /* border: solid #1a7a72; */
 }
 
 #ArtRefs {
   /* background-color: #26544b; */
-  position: absolute;
   width: 15%;
   height: 68.2%;
-  top: 703px;
-  left: 146px;
   /* float: left; */
   display: grid;
   grid-template-rows: 1fr;

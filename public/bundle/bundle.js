@@ -10911,11 +10911,7 @@ class Bucket extends Tool{
   super(iconSrc,iconDivId,isActive,cursorIcon)
 
   }
-  useBucket(fillColor, socket, isNamePicked, DrawingEnviroment, ctx) {
-    //Setup variables for eaiser to read If statments.
-    var mouse = DrawingEnviroment.mouse
-    var width = DrawingEnviroment.canvWidth
-    var height = DrawingEnviroment.canvHeight
+  useBucket(fillColor, socket, isNamePicked, mouse,width,height, ctx) {
     var isInsideWidth = mouse.x < width && mouse.x > 0
     var isInsideHeight = mouse.y < height && mouse.y > 0
     var isInsideDrawingArea = isInsideWidth && isInsideHeight
@@ -10938,13 +10934,7 @@ FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket, ctx) {
     hostColor: fillColor
   })
 }
- CreatePath(startingPoint, ctx, fillColor) {
-   this.FillArea({
-     x: startingPoint.x,
-     y: startingPoint.y,
-     color: startingPoint.color
-   }, ctx, fillColor, imageData)
- }
+
  FillArea(firstpoint, ctx, fillColor) {
    var imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
    var isPixelProcessedList = []
@@ -11187,27 +11177,26 @@ module.exports = {
 
  var $ = require("jquery")
  class DrawingEnviroment {
-   constructor(canvWidth, canvHeight, mouseX, mouseY, userName, color, correctionX, correctionY) {
-     this.mouse = new Mouse(mouseX, mouseY, correctionX, correctionY)
+   constructor(setup) {
+     this.mouse = new Mouse(setup.mouseX, setup.mouseY, setup.correctionX, setup.correctionY)
      this.tools = new Tools()
      this.isNamePicked = false
-     this.canvWidth = canvWidth
-     this.canvHeight = canvHeight
-     this.userName = userName
-     this.color = hexToRGB(color, 255)
-     this.savedColor = hexToRGB(color, 255)
-     this.brushSize = 2
+     this.canvWidth = setup.canvWidth
+     this.canvHeight = setup.canvHeight
+     this.userName = setup.userName
+     this.color = hexToRGB(setup.color, 255)
+     this.savedColor = hexToRGB(setup.color, 255)
+     this.brushSize = setup.brushSize
      this.palletColorsList = []
-     this.brushSizeUpperLimit = 6
-     this.brushSizeLowerLimit = 2
-     this.chatLimit = 18
+     this.brushSizeUpperLimit = setup.brushSizeUpperLimit
+     this.brushSizeLowerLimit = setup.brushSizeLowerLimit
+     this.chatLimit = setup.chatLimit
      this.chatCounter = 0
 
    }
 
    fillWithWhite(ctx) {
-     ctx.canvas.width = 1094
-     ctx.canvas.height = 500
+     
      ctx.strokeRect(20, 20, 1040, 445)
      ctx.fillStyle = "white"
      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -11293,8 +11282,8 @@ module.exports = {
       var mouse = this.mouse
       $("#" + socket.id + "-span").css("left", event.pageX - (mouse.CorrectionX - 15))
       $("#" + socket.id + "-span").css("top", event.pageY - (mouse.CorrectionY - 15))
-      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 18))
-      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 12))
+      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 8))
+      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 9))
       this.mouse.previousX = mouse.x
       this.mouse.previousY = mouse.y
       mouse.x = event.pageX
@@ -11504,11 +11493,11 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
     DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
     addClickEvents(DrawingEnviroment)
     UserNameAndCursorDivsSetup(socket, userName)
-    Socket_DrawEvents_Recieved(ctx, color, socket,DrawingEnviroment)
+    Socket_DrawEvents_Recieved(ctx, color, socket,DrawingEnviroment.tools.bucket)
     Socket_MouseEvents_Recieved(ctx, socket)
     Socket_HandleUserMovement_Recieved(socket)
     Socket_NewUser_Recieved(socket)
-    Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment)
+    Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment.tools.bucket)
     Socket_NameChangeEvent_Recieved(socket)
     Socket_CommentEvent_Recieved(socket,DrawingEnviroment)
   }
@@ -11557,7 +11546,7 @@ module.exports = {
 const {rgbaToText} = require("./PixelFunctions.js")
 var $ = require("jquery")
 
-function Socket_DrawEvents_Recieved(ctx,color,socket,DrawingEnviroment){
+function Socket_DrawEvents_Recieved(ctx,color,socket,Bucket){
 
     socket.on('draw', function (data) {
         data.data.forEach((point) => {
@@ -11571,7 +11560,7 @@ function Socket_DrawEvents_Recieved(ctx,color,socket,DrawingEnviroment){
             color[1] = point.data.hostColor[1]
             color[2] = point.data.hostColor[2]
             color[3] = point.data.hostColor[3]
-            DrawingEnviroment.tools.bucket.FillArea({
+            Bucket.FillArea({
               x: point.data.x,
               y: point.data.y,
               color: point.data.color
@@ -11660,7 +11649,7 @@ function Socket_NewUser_Recieved(socket){
 }
 
 
-function Socket_FillEvent_Recieved(ctx,color,socket,DrawingEnviroment){
+function Socket_FillEvent_Recieved(ctx,color,socket,Bucket){
     socket.on('fill', function (data) {
 
         var temp = color.slice(0)
@@ -11669,7 +11658,7 @@ function Socket_FillEvent_Recieved(ctx,color,socket,DrawingEnviroment){
         color[2] = data.hostColor[2]
         color[3] = data.hostColor[3]
       
-        DrawingEnviroment.tools.bucket.FillArea({
+        Bucket.FillArea({
           x: data.x,
           y: data.y,
           color: data.color
@@ -11731,34 +11720,29 @@ const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFuncti
 const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
 //https://together-draw-stuff.herokuapp.com
-//http://localhost:3000
+ 
 var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
   transports: ['websocket']
 })
 
 var setup={
-  canvWidth:1094,
+  canvWidth:1100,
   canvHeight:500,
-  correctionX:120,
-  correctionY:19,
-  initialName:"anon",
-  initialColor:"#000000",
-  initialMouseX:0,
-  initialMouseY:0
+  correctionX:135,
+  correctionY:22,
+  userName:"anon",
+  color:"#000000",
+  brushSize : 2,
+  brushSizeUpperLimit : 6,
+  brushSizeLowerLimit : 2,
+  chatLimit : 18,
+  chatCounter : 0,
 }
 var canvas = document.getElementById('Canvas')
 var ctx = canvas.getContext('2d')
 ctx.canvas.width = setup.canvWidth
 ctx.canvas.height = setup.canvHeight
-var DrawingEnviroment = new DrawingEnv.DrawingEnviroment(
-  setup.canvWidth,
-  setup.canvHeight,
-  setup.initialMouseX,
-  setup.initialMouseY,
-  setup.initialName,
-  setup.initialColor,
-  setup.correctionX,
-  setup.correctionY)
+var DrawingEnviroment = new DrawingEnv.DrawingEnviroment(setup)
 
 socket.on('connect', () => {
   RandomizeChatIcon(BackgroundIcon_1, BackgroundIcon_3)
@@ -11767,14 +11751,20 @@ socket.on('connect', () => {
   setInterval(drawAndEmitInterval, 10)
   window.onkeydown = handleKeyDown
 })
-
+//listener for mouseDown on canvas.  
 canvas.addEventListener('mousedown', function (event) {
   var isEventALeftClick = event.which == 1
-  if (isEventALeftClick) {
+  if (!isEventALeftClick) return
     DrawingEnviroment.mouse.isDown = true
     if (DrawingEnviroment.tools.bucket.isActive) 
-      DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color, socket, DrawingEnviroment.isNamePicked, DrawingEnviroment, ctx)
-    
+      DrawingEnviroment.tools.bucket.useBucket(
+        DrawingEnviroment.color, 
+        socket, 
+        DrawingEnviroment.isNamePicked, 
+        DrawingEnviroment.mouse,
+        DrawingEnviroment.canvWidth,
+        DrawingEnviroment.canvHeight, 
+        ctx)
     if (DrawingEnviroment.tools.colorPicker.isActive) {
       var mouse = DrawingEnviroment.mouse
       var pickedColor = ctx.getImageData(mouse.x - mouse.CorrectionX, mouse.y - mouse.CorrectionY, 1, 1).data
@@ -11784,7 +11774,7 @@ canvas.addEventListener('mousedown', function (event) {
       var colorInHex = RGBToHex(pickedColor)
       $("#ColorInput").val(colorInHex)
     }
-  }
+ 
 })
 canvas.addEventListener('mouseup', function () {
   DrawingEnviroment.mouse.isDown = false
@@ -11866,7 +11856,14 @@ function sendUsersMovments(){
 
 function handleKeyDown(event) {
   if (event.key === "t") {
-    DrawingEnviroment.tools.bucket.useBucket(DrawingEnviroment.color, socket, DrawingEnviroment.isNamePicked, DrawingEnviroment, ctx)
+    DrawingEnviroment.tools.bucket.useBucket(
+      DrawingEnviroment.color, 
+      socket, 
+      DrawingEnviroment.isNamePicked, 
+      DrawingEnviroment.mouse,
+      DrawingEnviroment.canvWidth,
+      DrawingEnviroment.canvHeight, 
+      ctx)
   }
 }
 
