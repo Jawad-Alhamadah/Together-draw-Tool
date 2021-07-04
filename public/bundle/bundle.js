@@ -11277,6 +11277,7 @@ module.exports = {
       $("#fullCanv").css("pointer-events", "auto")
       $("#fullCanv").css("animation", " OpacityUp 1.2s")
       $("#fullCanv").css("animation-fill-mode", "  forwards")
+      setTimeout(()=>{document.getElementById("PickANameWindow").remove() },1000)
     }
     iconFollowMouse(socket, event) {
       var mouse = this.mouse
@@ -11720,8 +11721,8 @@ const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFuncti
 const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
 //https://together-draw-stuff.herokuapp.com
- 
-var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
+//http://localhost:3000
+var socket = io.connect('http://localhost:3000', {
   transports: ['websocket']
 })
 

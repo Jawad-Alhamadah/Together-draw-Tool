@@ -104,6 +104,7 @@
       $("#fullCanv").css("pointer-events", "auto")
       $("#fullCanv").css("animation", " OpacityUp 1.2s")
       $("#fullCanv").css("animation-fill-mode", "  forwards")
+      setTimeout(()=>{document.getElementById("PickANameWindow").remove() },1000)
     }
     iconFollowMouse(socket, event) {
       var mouse = this.mouse

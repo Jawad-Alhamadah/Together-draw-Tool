@@ -22,8 +22,8 @@ const {RandomizeChatIcon,setUpInitialEnviroment}=require("../Modules/SetUpFuncti
 const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
 //https://together-draw-stuff.herokuapp.com
- 
-var socket = io.connect('https://together-draw-stuff.herokuapp.com', {
+//http://localhost:3000
+var socket = io.connect('http://localhost:3000', {
   transports: ['websocket']
 })
 
