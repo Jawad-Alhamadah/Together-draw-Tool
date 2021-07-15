@@ -71,10 +71,10 @@ left: 22px;
   background-position-x: 2%;
   background-position-y: 2%;
   background-repeat: no-repeat;
-  width: 8.5%;
-  height: 73%;
-  left: 84.5%;
-  top: 78%;
+  width: 9.2%;
+  height: 72%;
+  left: 83.5%;
+  top: 75%;
   -moz-user-select: -moz-none;
   -khtml-user-select: none;
   -webkit-user-select: none;
@@ -132,8 +132,8 @@ border-radius: 1%;
   padding: 1em;
   margin: -1em;
   background-clip: content-box;
-  width: 8%;
-  height: 46%;
+  width: 9.1%;
+  height: 42%;
 }
 
 input[type="color"] {
@@ -152,18 +152,11 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 #container {
- 
-width: 101%;
- 
-overflow: hidden;
- 
-position: relative;
- 
-height: 71%;
- 
-width: 100%;
- 
-width: 102%;
+ width: 101%;
+ overflow: hidden;
+ position: relative;
+ /* width: 100%; */
+ /* width: 102%; */
 }
 
 #container>span {
@@ -196,7 +189,6 @@ width: 102%;
 
 float: left;
 
-height: 100%;
 cursor:none;
 }
 
@@ -520,14 +512,14 @@ overflow-y: hidden;
 #ColorsDiv {
   background-color: #0b4139;
   /* width: 1092px; */
-  height: 21%;
+  height: 24%;
   /* position: absolute; */
   /* bottom: 1%; */
   /* left: 109px; */
   margin-top: 2%;
   padding-left: 4%;
   padding-right: 2%;
-  width: 102%;
+  width: 101%;
   padding-top: 1%;
   padding-bottom: 1%;
 }
@@ -547,7 +539,7 @@ overflow-y: hidden;
 
 #ColorsDiv>div:not(#ColorWheel) {
   width: 98%;
-  height: 100%;
+  height: 96%;
   /* position: absolute; */
   /* left: 3.5%; */
   /* top: 6%; */
