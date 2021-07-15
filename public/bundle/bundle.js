@@ -11283,8 +11283,8 @@ module.exports = {
       var mouse = this.mouse
       $("#" + socket.id + "-span").css("left", event.pageX - (mouse.CorrectionX - 15))
       $("#" + socket.id + "-span").css("top", event.pageY - (mouse.CorrectionY - 15))
-      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 8))
-      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 9))
+      $("#" + socket.id + "-cursor").css("left", event.pageX - (mouse.CorrectionX + 18))
+      $("#" + socket.id + "-cursor").css("top", event.pageY - (mouse.CorrectionY + 12))
       this.mouse.previousX = mouse.x
       this.mouse.previousY = mouse.y
       mouse.x = event.pageX
@@ -11722,7 +11722,7 @@ const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
 //https://draw-with-us.herokuapp.com/ 
 //http://localhost:3000
-var socket = io.connect('https://draw-with-us.herokuapp.com', {
+var socket = io.connect('http://localhost:3000', {
   transports: ['websocket']
 })
 
