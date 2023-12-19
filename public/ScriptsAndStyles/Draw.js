@@ -26,7 +26,7 @@ const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
 //https://draw-with-us.herokuapp.com/ 
 //http://localhost:3000
-var socket = io.connect('http://localhost:4500', {
+var socket = io.connect('http://192.168.1.6:4500/', {
   transports: ['websocket']
 })
 
