@@ -24,6 +24,13 @@ FillAreaAndEmitToOtherUsers(mouse, tempColor, fillColor, socket, ctx) {
     y: mouse.y - mouse.CorrectionY,
     color: tempColor
   }, ctx, fillColor)
+
+console.log("fill: ",{
+  x: mouse.x - mouse.CorrectionX,
+  y: mouse.y - mouse.CorrectionY,
+  color: tempColor,
+  hostColor: fillColor
+})
   socket.emit('fill', {
     x: mouse.x - mouse.CorrectionX,
     y: mouse.y - mouse.CorrectionY,

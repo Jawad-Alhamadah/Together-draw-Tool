@@ -32,6 +32,7 @@ function Socket_DrawEvents_Recieved(ctx,color,socket,Bucket){
 
 function Socket_MouseEvents_Recieved(ctx,socket){
     socket.on("MouseEvent", function (data) {
+     
         data.points.forEach((item, i) => {
           if (item.y < ctx.canvas.height ) {
             ctx.fillStyle = rgbaToText(data.color)
@@ -76,7 +77,9 @@ function Socket_HandleUserMovement_Recieved(socket){
 }
 
 function Socket_NewUser_Recieved(socket){
+  
     socket.on("newUserSpans", function (data) {
+    
         data.forEach(function (data) {
           var tempspan = document.createElement("span")
           var tempcursorImage = document.createElement("img")

@@ -54,6 +54,7 @@ function RandomizeChatIcon(BackgroundIcon_1,BackgroundIcon_3){
     Socket_FillEvent_Recieved(ctx, color, socket,DrawingEnviroment.tools.bucket)
     Socket_NameChangeEvent_Recieved(socket)
     Socket_CommentEvent_Recieved(socket,DrawingEnviroment)
+    //Socket_Connected()
   }
 
   function addClickEvents(DrawingEnviroment) {

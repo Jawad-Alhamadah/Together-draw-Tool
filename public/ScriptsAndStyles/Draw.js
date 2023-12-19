@@ -12,6 +12,9 @@
 //   }
 // }
 
+//use nodemon --exec npm start --ignore 'public/bundle/*'  in  path /drawing.
+//Remeber to change the port if needed 
+
 var BackgroundIcon_1="kitty-1.png"
 var BackgroundIcon_3="painting-3.png"
 var $ = require("jquery")
@@ -23,16 +26,16 @@ const DrawingEnv=require("../Modules/DrawingEnviroment.js")
 //
 //https://draw-with-us.herokuapp.com/ 
 //http://localhost:3000
-var socket = io.connect('https://draw-with-us.herokuapp.com', {
+var socket = io.connect('http://localhost:4500', {
   transports: ['websocket']
 })
 
 var setup={
-  canvWidth:1100,
+  canvWidth:1300,
   canvHeight:500,
   correctionX:135,
   correctionY:22,
-  userName:"anon",
+  serName:"anon",
   color:"#000000",
   brushSize : 2,
   brushSizeUpperLimit : 6,
@@ -49,7 +52,7 @@ var DrawingEnviroment = new DrawingEnv.DrawingEnviroment(setup)
 socket.on('connect', () => {
   RandomizeChatIcon(BackgroundIcon_1, BackgroundIcon_3)
   setUpInitialEnviroment(ctx, socket, DrawingEnviroment.color, DrawingEnviroment.userName, DrawingEnviroment)
-  setInterval(sendUsersMovments, 20)
+  //setInterval(sendUsersMovements, 20)
   setInterval(drawAndEmitInterval, 10)
   window.onkeydown = handleKeyDown
 })
@@ -75,9 +78,17 @@ canvas.addEventListener('mousedown', function (event) {
       //val function needs hex
       var colorInHex = RGBToHex(pickedColor)
       $("#ColorInput").val(colorInHex)
+     // console.log("Color in hex line 81: ",colorInHex)
+      $("#colorPickerSpan").css('background-color',colorInHex)
+
+      //ToDo implement a click on color span that activates the color picker.
+      //Todo Make the change in color reflect on the background span.
     }
  
 })
+
+
+
 canvas.addEventListener('mouseup', function () {
   DrawingEnviroment.mouse.isDown = false
 })
@@ -102,7 +113,7 @@ function drawAndEmitInterval() {
       ctx.fillStyle = rgbaToText(DrawingEnviroment.color)
       ctx.fillRect(x, y, fillSize, fillSize)
     }
-    //
+   
     socket.emit("MouseEvents", straightLineListPoints)
   }
 }
@@ -110,6 +121,8 @@ function drawAndEmitInterval() {
 $("#ColorInput").on("input",(event) => {
   DrawingEnviroment.setBrushColor(hexToRGB(event.target.value, 255))
   DrawingEnviroment.savedColor = hexToRGB(event.target.value, 255)
+
+  $("#colorPickerSpan").css('background-color',event.target.value)
   //the Eraser sets the color to white. We need to set the tool to brush to avoid painting color with an eraser.
   if (DrawingEnviroment.tools.eraser.isActive) DrawingEnviroment.tools.activateBrush(DrawingEnviroment)
 
@@ -118,12 +131,18 @@ $("#ColorInput").on("input",(event) => {
 $("body").mousemove(function (event) {
   DrawingEnviroment.iconFollowMouse(socket, event)
 })
+$("#colorPickerSpan").click(function (event) {
+  $("#ColorInput").click()
+  
+})
+
 
 $("#CommentBtn").click(function () {
   var commentBox = document.getElementById("commentBox")
   var comment = `${DrawingEnviroment.userName} : ${commentBox.value} \n`
   DrawingEnviroment.makeAComment(comment, "redSpan")
   commentBox.value = ""
+  
   socket.emit('comment', comment)
 })
 document.querySelector("#commentBox").addEventListener("keydown", event => {
@@ -139,6 +158,7 @@ $("#NameBtn").click(function () {
   if (isNameAccepted) {
     DrawingEnviroment.changeName()
     document.getElementById(socket.id + "-span").innerHTML = DrawingEnviroment.userName
+
     socket.emit("NameChange", {
       id: socket.id + "-span",
       Username: DrawingEnviroment.userName
@@ -146,7 +166,11 @@ $("#NameBtn").click(function () {
   }
 })
 
-function sendUsersMovments(){
+window.addEventListener('mousemove', sendUsersMovements, false);
+
+function sendUsersMovements(e){
+ e.preventDefault()
+
   socket.emit("UserMoved", {
     x: DrawingEnviroment.mouse.x - DrawingEnviroment.mouse.CorrectionX,
     y: DrawingEnviroment.mouse.y - DrawingEnviroment.mouse.CorrectionY,

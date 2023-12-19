@@ -66,19 +66,21 @@ left: 22px;
 }
 
 #ColorWheel {
-  background-image: url('color.png');
   background-size: 100%;
   background-position-x: 2%;
   background-position-y: 2%;
+  background: url('color.png') center center no-repeat;
   background-repeat: no-repeat;
-  width: 9.2%;
-  height: 72%;
-  left: 83.5%;
-  top: 75%;
+  background-size: 103%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* left: 98.5%; */
+  /* top: 75%; */
   -moz-user-select: -moz-none;
   -khtml-user-select: none;
   -webkit-user-select: none;
-  pointer-events: none;
+  /* pointer-events: none; */
   opacity: 100%;
   position: absolute;
 }
@@ -124,16 +126,73 @@ border-radius: 1%;
 
 }
 
-#ColorInput {
+
+
+.Wheelcontainer {
   position: relative;
-  top: -53%;
-  left: 88%;
+  /* position: absolute; */
+  /* background: url(color.png) center center no-repeat; */
+  background-size: 75%;
+  /* background-size: cover; */
+  width: 100px;
+  height: 100px;
+  bottom: 70%;
+  left: 81%;
+}
+
+.centered-div {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.content {
+  background-color: #00f;
+  color: #fff;
+  padding: 20px;
+  margin: 10px;
+}
+
+
+
+
+#ColorInput {
   display: inline-block;
-  padding: 1em;
-  margin: -1em;
+  /* padding: 1em; */
+  /* margin: -1em; */
   background-clip: content-box;
-  width: 9.1%;
-  height: 42%;
+  /* width: 9.1%; */
+  /* height: 42%; */
+  margin: 0%;
+  padding: 0%;
+  width: 49%;
+  height: 47%;
+  top: 27%;
+  left: 26%;
+  position: absolute;
+  border-radius: 43%;
+  display: none;
+  
+}
+
+#colorPickerSpan{
+  
+    border-radius: 50%;
+    background-color: black;
+    display: inline-block;
+    margin: 0%;
+    /* background: url(color.png) center center no-repeat; */
+    padding: 0%;
+    position: absolute;
+    width: 100%;
+    /* height: 100%; */
+    width: 91px;
+    height: 91px;
+    top: 6%;
+    /* display: none; */
+    left: 7%;
+
 }
 
 input[type="color"] {
@@ -152,11 +211,16 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 #container {
- width: 101%;
- overflow: hidden;
- position: relative;
- /* width: 100%; */
- /* width: 102%; */
+ 
+width: 101%;
+ 
+overflow: hidden;
+ 
+position: relative;
+ 
+/* width: 100%; */
+ 
+/* width: 102%; */
 }
 
 #container>span {
@@ -509,7 +573,17 @@ overflow-y: hidden;
 
 }
 
+.ColorWheel-Container{
+  display: flex;
+  /* Center content both horizontally and vertically */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+
+}
+
+
 #ColorsDiv {
+ 
   background-color: #0b4139;
   /* width: 1092px; */
   height: 24%;
@@ -537,7 +611,7 @@ overflow-y: hidden;
 
 }
 
-#ColorsDiv>div:not(#ColorWheel) {
+#ColorsDiv>div:not(.Wheelcontainer) {
   width: 98%;
   height: 96%;
   /* position: absolute; */

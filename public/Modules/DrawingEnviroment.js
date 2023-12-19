@@ -63,6 +63,8 @@
         this.setBrushColor(color)
         this.savedColor = color
         $("#ColorInput").val("#" + event.target.id)
+        console.log(" event Target Color 66 #" + event.target.id)
+        $("#colorPickerSpan").css("background-color","#" + event.target.id)
       }) //
     }
 
